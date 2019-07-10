@@ -15,13 +15,35 @@ let players;
 
 let thisId;
 
+let unclaimedDisks = [];
+
+let diskLocations = [{x: 50, y: 50},{x: 300, y: 50},{x: 50, y: 300},{x: 300, y: 300}]
+
 function Player(name,color){
     this.name = name;
 
     this.color = color;
 
     this.mouse = {x: 0, y: 0}
+
+    this.hasDisk = 0
 }
+
+function Disk(x,y){
+    this.x = x
+
+    this.y = y
+
+    this.maxSpeed = 10;
+}
+
+function UnclaimedDisk(x,y){
+    this.x = x
+
+    this.y = y
+}
+
+
 
 //hello
 thisPlayer = new Player("Ashlyn","#ff0000")
@@ -50,11 +72,15 @@ class GameScreen extends React.Component {
             players = data.players
 
             thisId = data.id
+
+            const diskPos = unclaimedDisks[thisId]
             
 
             console.log(players)
 
             console.log(thisId)
+
+            unclaimedDisks.push(new Disk(diskPos.x,diskPos.y))
         })
 
         socket.on("other join response", function(data){
@@ -66,7 +92,6 @@ class GameScreen extends React.Component {
         socket.on("player info response", function(player){
             players[player.id] = player;
         })
-        
     }
 
     //clears the entire canvas
