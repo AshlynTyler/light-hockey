@@ -37,6 +37,10 @@ function Disk(x,y){
     this.maxSpeed = 20;
 
     this.radius = 20;
+
+    this.direction = 0;
+
+    this.speed = 0;
 }
 
 function UnclaimedDisk(x,y){
@@ -148,17 +152,21 @@ class GameScreen extends React.Component {
 
             if(player.hasDisk === 1){
 
+                players[thisId].disk.direction = direction(player.disk.x,player.disk.y,player.mouse.x,player.mouse.y)
+
                 if(distance(player.mouse.x,player.mouse.y,player.disk.x,player.disk.y) <= player.disk.maxSpeed){
                     players[thisId].disk.x = player.mouse.x
                     players[thisId].disk.y = player.mouse.y
+
+                    players[thisId].disk.speed = player.disk.maxSpeed
                 }
                 else{
-                    const moveDist = findXY(player.disk.maxSpeed,direction(player.disk.x,player.disk.y,player.mouse.x,player.mouse.y))
-
-                    console.log(moveDist)
+                    const moveDist = findXY(player.disk.maxSpeed,players[thisId].disk.direction)
 
                     players[thisId].disk.x += moveDist.x
                     players[thisId].disk.y += moveDist.y
+
+                    players[thisId].disk.speed = distance(0,0,moveDist.x,moveDist.y)
                 }
 
             }
@@ -261,7 +269,7 @@ class GameScreen extends React.Component {
 
     render() {
         return(
-            <canvas onMouseMove = {this.onMouseMove} onClick = {this.onClick} id ="canvas-a" ref="canvas" width="1200px" height="800px"/>
+            <canvas onMouseMove = {this.onMouseMove} onClick = {this.onClick} id ="canvas-a" ref="canvas" width="1200px" height="675px"/>
         )
     }
 }
