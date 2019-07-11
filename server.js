@@ -49,6 +49,18 @@ colors = ["#ff0000","#0000ff","#00ff00"]
 
 pucks = [];
 
+unclaimedDisks = [];
+
+function UnclaimedDisk(x,y){
+  this.x = x
+
+  this.y = y
+
+  this.radius = 20
+}
+
+let diskLocations = [{x: 50, y: 50},{x: 300, y: 50},{x: 50, y: 300},{x: 300, y: 300}]
+
 function Puck(x = 600,y = 675/2,radius=10,points=20){
   this.x = x
   this.y = y
@@ -65,10 +77,38 @@ function Puck(x = 600,y = 675/2,radius=10,points=20){
   this.points = points
 
   this.radius = radius
+
+  this.id = pucks.length
+}
+
+let boundary = {
+  top: 50,
+  left: 50,
+  bottom: 625,
+  right: 1150
+}
+
+function movePuck(puck){
+  puck.x += puck.xSpeed
+
+  puck.y += puck.ySpeed
+
+  if(puck.x -puck.radius< boundary.left){
+    puck.x += (boundary.left - (puck.x - puck.radius))*2 + puck.radius
+
+    puck.xSpeed = -puck.xSpeed
+  }
+  if(puck.x +puck.radius< boundary.right){
+    puck.x += (boundary.right - (puck.x - puck.radius))*2 + puck.radius
+
+    puck.xSpeed = -puck.xSpeed
+
+    return puck
+  }
 }
 
 function gameStep(){
-
+  
 }
 
 // handling socket connections and emissions.
@@ -78,23 +118,22 @@ io.on('connection', function(socket){
     console.log('user disconnected');
   });
 
+  socket.join("test-room")
+
   socket.on("player join", function(player){
     player.id = players.length
 
     player.color = colors[player.id]
 
-    if(player.id === 0){
-      pucks.push(new Puck())
-
-      socket.emit
-    }
-      
-
     players.push(player)
 
-    socket.emit("player join response", {id: player.id, players: players})
+      unclaimedDisks.push(new UnclaimedDisk(diskLocations[players.length -1 ].x,diskLocations[players.length -1].y))
 
-    socket.broadcast.emit("other join response", players)
+    socket.emit("player join response", {id: player.id, players: players, disks: unclaimedDisks})
+
+    socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks})
+
+
   })
 
   socket.on("player info", function(player){
@@ -104,7 +143,15 @@ io.on('connection', function(socket){
   })
 
   socket.on("claim disk", function(data){
-    socket.broadcast.emit("claim disk response", data)
+    unclaimedDisks = data
+
+    if(unclaimedDisks.length === 0 && pucks.length === 0){
+
+      console.log("success!")
+      pucks.push(new Puck())
+    }
+
+    io.in("test-room").emit("claim disk response", {disks: unclaimedDisks, pucks: pucks})
   })
 });
 

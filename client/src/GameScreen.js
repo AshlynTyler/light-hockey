@@ -17,7 +17,9 @@ let thisId;
 
 let unclaimedDisks = [];
 
-let diskLocations = [{x: 50, y: 50},{x: 300, y: 50},{x: 50, y: 300},{x: 300, y: 300}]
+let pucks = [];
+
+
 
 function Player(name,color){
     this.name = name;
@@ -43,13 +45,6 @@ function Disk(x,y){
     this.speed = 0;
 }
 
-function UnclaimedDisk(x,y){
-    this.x = x
-
-    this.y = y
-
-    this.radius = 20
-}
 
 
 //returns the distance between two points.
@@ -95,6 +90,8 @@ class GameScreen extends React.Component {
             this.gameStep()
         },(1000/60))
 
+        //activating sockets
+
         socket = this.props.userSocket
 
         players = []
@@ -106,21 +103,13 @@ class GameScreen extends React.Component {
 
             thisId = data.id
 
-            const diskPos = diskLocations[thisId]
-
-            for(let i = 0; i <= thisId; i++){
-                unclaimedDisks.push(new UnclaimedDisk(diskLocations[i].x,diskLocations[i].y))
-            }
+            unclaimedDisks = data.disks
         })
 
         socket.on("other join response", function(data){
-            players = data
+            players = data.players
 
-            console.log(players)
-
-            const diskPos = diskLocations[unclaimedDisks.length]
-
-            unclaimedDisks.push(new UnclaimedDisk(diskPos.x,diskPos.y))
+            unclaimedDisks = data.disks
         })
 
         socket.on("player info response", function(player){
@@ -128,7 +117,9 @@ class GameScreen extends React.Component {
         })
 
         socket.on("claim disk response", function(data){
-            unclaimedDisks = data
+            unclaimedDisks = data.disks
+
+            pucks = data.pucks
         })
     }
 
@@ -190,29 +181,45 @@ class GameScreen extends React.Component {
 
         for(let i = 0; i < players.length; i++){
 
-                //render mouse pointer of players
+
+
+            //render disks of players
+
+            if(players[i].hasDisk === 1){
 
                 draw.beginPath();
 
-                draw.arc(players[i].mouse.x,players[i].mouse.y,5,0,2*Math.PI)
+                draw.arc(players[i].disk.x,players[i].disk.y,players[i].disk.radius,0,2*Math.PI)
                 
-                draw.fillStyle = players[i].color
+                draw.strokeStyle = players[i].color
         
-                draw.fill();
+                draw.stroke();
+            }
 
-                //render disks of players
+            //render mouse pointer of players
 
-                if(players[i].hasDisk === 1){
+            draw.beginPath();
 
-                    draw.beginPath();
-
-                    draw.arc(players[i].disk.x,players[i].disk.y,players[i].disk.radius,0,2*Math.PI)
-                    
-                    draw.strokeStyle = players[i].color
+            draw.arc(players[i].mouse.x,players[i].mouse.y,5,0,2*Math.PI)
             
-                    draw.stroke();
-                }
+            draw.fillStyle = players[i].color
+
+            draw.fill();
+
+
         }
+
+        //render pucks
+
+        pucks.forEach(function(current){
+            draw.beginPath();
+
+            draw.arc(current.x,current.y,current.radius,0,2*Math.PI)
+            
+            draw.fillStyle = "#ffffff"
+    
+            draw.fill();
+        })
 
         //render unclaimed disks
 
@@ -228,6 +235,8 @@ class GameScreen extends React.Component {
     
             draw.stroke();
         }
+
+
     }
 
     onMouseMove = (event) =>{
@@ -253,7 +262,7 @@ class GameScreen extends React.Component {
 
                     players[thisId].hasDisk = 1;
 
-                    unclaimedDisks.splice(current,1)
+                    unclaimedDisks.splice(unclaimedDisks.indexOf(current),1)
 
                     socket.emit("claim disk", unclaimedDisks)
 
