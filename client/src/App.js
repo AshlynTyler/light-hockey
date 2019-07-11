@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import {GameScreen} from "./components"
+import {GameScreen} from "./GameScreen"
 import io from "socket.io-client";
 
 class App extends React.Component {
@@ -18,8 +18,6 @@ class App extends React.Component {
   componentWillMount() {
     const { endpoint } = this.state.endpoint;
     this.state.socket = io("http://localhost:3001");
-    this.state.socket.on("test-response", data => console.log(data));
-    this.state.socket.emit("test", "hello!")
   }
   
   render(){

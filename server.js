@@ -43,14 +43,13 @@ io.on('connection', function(socket){
   })
 
   socket.on("player info", function(player){
-    players[player.id].mouse.x = player.mouse.x
-    players[player.id].mouse.y = player.mouse.y
+    players[player.id] = player
 
     socket.broadcast.emit("player info response", players[player.id])
   })
 
-  socket.on("test", function(data){
-    console.log(data)
+  socket.on("claim disk", function(data){
+    socket.broadcast.emit("claim disk response", data)
   })
 });
 
