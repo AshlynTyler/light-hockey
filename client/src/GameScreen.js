@@ -19,6 +19,13 @@ let unclaimedDisks = [];
 
 let pucks = [];
 
+let boundary = {
+    top: 50,
+    left: 50,
+    bottom: 625,
+    right: 1150
+  }
+
 
 
 function Player(name,color){
@@ -43,6 +50,8 @@ function Disk(x,y){
     this.direction = 0;
 
     this.speed = 0;
+    this.xSpeed = 0;
+    this.ySpeed = 0;
 }
 
 
@@ -69,6 +78,60 @@ function findXY(length,angle){
         x: Math.cos(angle) * length
     }
 }
+
+function movePuck(puck){
+
+    for(let i = 0; i < 2; i++){
+
+        //moving the puck
+        puck.x += puck.xSpeed
+    
+        puck.y += puck.ySpeed
+        
+        //bouncing off the walls
+        if(puck.x -puck.radius< boundary.left){
+            puck.x += (boundary.left - (puck.x - puck.radius))*2
+        
+            puck.xSpeed = -puck.xSpeed
+        }
+        if(puck.x +puck.radius< boundary.right){
+            puck.x += (boundary.right - (puck.x - puck.radius))*2
+        
+            puck.xSpeed = -puck.xSpeed
+        }
+        if(puck.y -puck.radius< boundary.top){
+            puck.y += (boundary.top - (puck.y - puck.radius))*2
+        
+            puck.ySpeed = -puck.ySpeed
+        }
+        if(puck.y +puck.radius< boundary.right){
+            puck.y += (boundary.right - (puck.y - puck.radius))*2
+        
+            puck.ySpeed = -puck.ySpeed
+        }
+
+        puck.speed = distance(0,0,puck.xSpeed,puck.ySpeed)
+
+        puck.direction = angle(0,0,puck.xSpeed,puck.ySpeed)
+
+        players.forEach(function(player){
+
+            //checking for collision with a player disk
+            if(distance(puck.x,puck.y,player.disk.x,player.disk.y) < puck.radius - player.disk.radius && player.disk.speed){
+                while(distance(puck.x,puck.y,player.disk.x,player.disk.y) < puck.radius - player.disk.radius){
+                    puck.x -= puck.xspeed /5
+                    puck.y -= puck.yspeed /5
+
+                    player.disk.x -= player.disk.xSpeed /10
+                    player.disk.y -= player.disk.ySpeed /10
+                }
+            }
+        })
+
+        
+        return puck
+    }
+  }
 
 //hello
 thisPlayer = new Player("Ashlyn","#ff0000")
@@ -156,6 +219,9 @@ class GameScreen extends React.Component {
 
                     players[thisId].disk.x += moveDist.x
                     players[thisId].disk.y += moveDist.y
+
+                    players[thisId].disk.xSpeed = moveDist.x
+                    players[thisId].disk.ySpeed = moveDist.y
 
                     players[thisId].disk.speed = distance(0,0,moveDist.x,moveDist.y)
                 }

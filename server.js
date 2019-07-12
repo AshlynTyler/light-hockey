@@ -61,7 +61,7 @@ function UnclaimedDisk(x,y){
 
 let diskLocations = [{x: 50, y: 50},{x: 300, y: 50},{x: 50, y: 300},{x: 300, y: 300}]
 
-function Puck(x = 600,y = 675/2,radius=10,points=20){
+function Puck(x = 600,y = 675/2,radius=15,points=20){
   this.x = x
   this.y = y
 
