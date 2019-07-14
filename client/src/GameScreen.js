@@ -20,10 +20,10 @@ let unclaimedDisks = [];
 let pucks = [];
 
 let boundary = {
-    top: 50,
-    left: 50,
-    bottom: 625,
-    right: 1150
+    top: 10,
+    left: 10,
+    bottom: 665,
+    right: 1190
   }
 
 
@@ -45,7 +45,7 @@ function Disk(x,y){
 
     this.maxSpeed = 20;
 
-    this.radius = 20;
+    this.radius = 25;
 
     this.direction = 0;
 
@@ -118,6 +118,21 @@ function movePuck(puck){
 
         puck.direction = direction(0,0,puck.xSpeed,puck.ySpeed)
 
+        puck.speed -= puck.friction
+
+        if(puck.speed < 0){
+            puck.speed = 0
+        }
+
+        if(puck.speed > puck.maxSpeed)
+            puck.speed = puck.maxSpeed
+
+        let newSpeeds = findXY(puck.speed,puck.direction)
+
+        puck.xSpeed = newSpeeds.x
+        puck.ySpeed = newSpeeds.y
+
+
         let disk = players[thisId].disk
 
         if(i === 0){
@@ -149,28 +164,30 @@ function movePuck(puck){
                 angleDiff = Math.abs(angleDiff - 2*Math.PI)
             }
 
-            puck.speed = (disk.speed * (((Math.PI/2) - angleDiff)/(Math.PI/2)))*1.1
+            let newSpeed1 = (disk.speed * (((Math.PI/2) - angleDiff)/(Math.PI/2)))*1.1
 
-            console.log("disk speed:" + disk.speed)
+            let newDirection1 = collisionAngle
 
-            console.log("puck speed:" + puck.speed)
+            let newXY1 = findXY(newSpeed1,newDirection1)
 
-            puck.direction = collisionAngle
+            
+
+            angleDiff = collisionAngle - puck.direction
+
+
+            let newDirection2 = puck.direction +angleDiff
+
+            let newSpeed2 = puck.speed * .4
+
+            let newXY2 = findXY(newSpeed2,newDirection2)
+
+
+
+
+            puck.xSpeed = newXY1.x + newXY2.x
+            puck.ySpeed = newXY1.y + newXY2.y
         }
 
-        puck.speed -= puck.friction
-
-        if(puck.speed < 0){
-            puck.speed = 0
-        }
-
-        if(puck.speed > puck.maxSpeed)
-            puck.speed = puck.maxSpeed
-
-        let newSpeeds = findXY(puck.speed,puck.direction)
-
-        puck.xSpeed = newSpeeds.x
-        puck.ySpeed = newSpeeds.y
 
         
         
@@ -301,8 +318,70 @@ class GameScreen extends React.Component {
         
     
         this.clearCanvas();
+
+        //drawing the board
+
+        let width = this.refs.canvas.offsetWidth
+
+        let height = this.refs.canvas.offsetHeight
+
+        draw.lineWidth = 2
+
+        draw.beginPath();
+
+        draw.strokeStyle = "#ffffff55"
+
+        draw.moveTo(width/2,boundary.top)
+
+        draw.lineTo(width/2,boundary.bottom)
+
+        draw.stroke();
+
+        draw.beginPath();
+
+        draw.strokeStyle = "#0000ff"
     
-        
+        draw.moveTo(width/2,boundary.top)
+
+        draw.lineTo(boundary.left,boundary.top)
+
+        draw.lineTo(boundary.left,boundary.bottom)
+
+        draw.lineTo(width/2,boundary.bottom)
+
+        draw.stroke();
+
+        draw.beginPath();
+
+        draw.strokeStyle = "#ff0000"
+    
+        draw.moveTo(width/2,boundary.top)
+
+        draw.lineTo(boundary.right,boundary.top)
+
+        draw.lineTo(boundary.right,boundary.bottom)
+
+        draw.lineTo(width/2,boundary.bottom)
+
+        draw.stroke();
+
+        draw.beginPath();
+
+        draw.strokeStyle = "#ffffff"
+
+        draw.lineWidth = 4
+
+        draw.moveTo(boundary.left,boundary.top + (boundary.bottom-boundary.top)/3)
+
+        draw.lineTo(boundary.left,boundary.top + (boundary.bottom-boundary.top)*2/3)
+
+        draw.moveTo(boundary.right,boundary.top + (boundary.bottom-boundary.top)/3)
+
+        draw.lineTo(boundary.right,boundary.top + (boundary.bottom-boundary.top)*2/3)
+
+        draw.stroke()
+
+        draw.lineWidth = 3
 
         for(let i = 0; i < players.length; i++){
 
