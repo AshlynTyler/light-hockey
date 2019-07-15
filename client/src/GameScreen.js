@@ -186,6 +186,8 @@ function movePuck(puck){
 
             puck.xSpeed = newXY1.x + newXY2.x
             puck.ySpeed = newXY1.y + newXY2.y
+
+            socket.emit("puck info", puck)
         }
 
 
@@ -211,7 +213,7 @@ class GameScreen extends React.Component {
 
         
 
-        gameInterval = setInterval(() =>{
+        let gameInterval = setInterval(() =>{
             this.gameStep()
         },(1000/60))
 
@@ -247,6 +249,10 @@ class GameScreen extends React.Component {
             pucks = data.pucks
 
             console.log(pucks)
+        })
+
+        socket.on("puck info response", function(puck){
+            pucks[puck.id] = puck
         })
     }
 
@@ -302,6 +308,8 @@ class GameScreen extends React.Component {
 
             pucks.forEach(function(puck){
                 movePuck(puck)
+
+                
             })
 
             socket.emit("player info", players[thisId])

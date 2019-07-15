@@ -6,6 +6,8 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http, { origins: '*:*'});
 
 
+
+
 // Serve up static assets (usually on heroku)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("client/build"));
@@ -42,21 +44,32 @@ function findXY(length,angle){
   }
 }
 
+let boundary = {
+  top: 10,
+  left: 10,
+  bottom: 665,
+  right: 1190
+}
 
-players = [];
+let players = [];
 
-colors = ["#ff0000","#0000ff","#00ff00"]
+const colors = ["#ff0000","#0000ff","#00ff00"]
 
-pucks = [];
+let pucks = [];
 
-unclaimedDisks = [];
+let unclaimedDisks = [];
+
+let score = {
+  blue: 0,
+  red: 0
+}
 
 function UnclaimedDisk(x,y){
   this.x = x
 
   this.y = y
 
-  this.radius = 20
+  this.radius = 25
 }
 
 let diskLocations = [{x: 50, y: 50},{x: 300, y: 50},{x: 50, y: 300},{x: 300, y: 300}]
@@ -81,35 +94,80 @@ function Puck(x = 600,y = 675/2,radius=15,points=10){
   this.id = pucks.length
 }
 
-let boundary = {
-  top: 50,
-  left: 50,
-  bottom: 625,
-  right: 1150
-}
-
 function movePuck(puck){
   puck.x += puck.xSpeed
 
   puck.y += puck.ySpeed
 
   if(puck.x -puck.radius< boundary.left){
-    puck.x += (boundary.left - (puck.x - puck.radius))*2 + puck.radius
+
+    scoreGoal(puck,"red")
+
+    puck.x += (boundary.left - (puck.x - puck.radius))*2
 
     puck.xSpeed = -puck.xSpeed
   }
-  if(puck.x +puck.radius< boundary.right){
-    puck.x += (boundary.right - (puck.x - puck.radius))*2 + puck.radius
+  if(puck.x +puck.radius> boundary.right){
+
+    scoreGoal(puck,"blue")
+
+    puck.x += (boundary.right - (puck.x + puck.radius))*2
 
     puck.xSpeed = -puck.xSpeed
+  }
+  if(puck.y -puck.radius< boundary.top){
+    puck.y += (boundary.top - (puck.y - puck.radius))*2
+
+    puck.ySpeed = -puck.ySpeed
+  }
+  if(puck.y +puck.radius> boundary.bottom){
+    puck.y += (boundary.bottom - (puck.y + puck.radius))*2
+
+    puck.ySpeed = -puck.ySpeed
+  }
+
+  puck.speed = distance(0,0,puck.xSpeed,puck.ySpeed)
+
+  puck.direction = direction(0,0,puck.xSpeed,puck.ySpeed)
+
+  puck.speed -= puck.friction
+
+  if(puck.speed < 0){
+      puck.speed = 0
+  }
+
+  if(puck.speed > puck.maxSpeed)
+      puck.speed = puck.maxSpeed
+
+  let newSpeeds = findXY(puck.speed,puck.direction)
+
+  puck.xSpeed = newSpeeds.x
+  puck.ySpeed = newSpeeds.y
+
 
     return puck
+  
+}
+
+function scoreGoal(puck,teamScore){
+  if(puck.y > boundary.top + (boundary.bottom-boundary.top)/3 && puck.y < boundary.top + (boundary.bottom-boundary.top)*2/3){
+
+    io.in("test-room").emit("goal", {id: puck.id, team: "red", points: puck.points})
+
+    pucks.splice(puck.id,1)
   }
+
 }
 
 function gameStep(){
-  
+  pucks.forEach(function(puck){
+    movePuck(puck)
+  })
 }
+
+let gameInterval = setInterval(() =>{
+  this.gameStep()
+},(1000/60))
 
 // handling socket connections and emissions.
 io.on('connection', function(socket){
@@ -152,6 +210,12 @@ io.on('connection', function(socket){
     }
 
     io.in("test-room").emit("claim disk response", {disks: unclaimedDisks, pucks: pucks})
+  })
+
+  socket.on("puck info", function(puck){
+    pucks[puck.id] = puck
+
+    socket.broadcast.emit("puck info response", puck)
   })
 });
 
