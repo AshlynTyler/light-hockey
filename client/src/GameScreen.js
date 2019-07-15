@@ -1,5 +1,6 @@
 import React from 'react';
 import io from "socket.io-client";
+import './App.css';
 
 let socket;
 
@@ -38,7 +39,7 @@ function Player(name,color){
     this.hasDisk = 0
 }
 
-function Disk(x,y){
+function Disk(x,y,team){
     this.x = x
 
     this.y = y
@@ -52,6 +53,11 @@ function Disk(x,y){
     this.speed = 0;
     this.xSpeed = 0;
     this.ySpeed = 0;
+
+    this.xSpeedArray = []
+    this.ySpeedArray = []
+
+    this.team = team
 }
 
 
@@ -79,6 +85,15 @@ function findXY(length,angle){
     }
 }
 
+function scoreGoal(puck,team){
+    if(puck.y > boundary.top + (boundary.bottom-boundary.top)/3 && puck.y < boundary.top + (boundary.bottom-boundary.top)*2/3){
+        puck.goal = 1
+
+        socket.emit("goal",{team:team, puck:puck})
+    }
+  
+  }
+
 function movePuck(puck){
 
     for(let i = 0; i < 2; i++){
@@ -92,11 +107,16 @@ function movePuck(puck){
         
         //bouncing off the walls
         if(puck.x -puck.radius< boundary.left){
+
+            scoreGoal(puck,"red");
+
             puck.x += (boundary.left - (puck.x - puck.radius))*2
-        
+
             puck.xSpeed = -puck.xSpeed
         }
         if(puck.x +puck.radius> boundary.right){
+
+            scoreGoal(puck,"blue");
             puck.x += (boundary.right - (puck.x + puck.radius))*2
         
             puck.xSpeed = -puck.xSpeed
@@ -132,65 +152,67 @@ function movePuck(puck){
         puck.xSpeed = newSpeeds.x
         puck.ySpeed = newSpeeds.y
 
+        if(players[thisId].hasDisk === 1){
+            let disk = players[thisId].disk
 
-        let disk = players[thisId].disk
-
-        if(i === 0){
-            disk.x -= disk.xSpeed/2
-            disk.y -= disk.ySpeed/2
-        }
-        else{
-            disk.x += disk.xSpeed/2
-            disk.y += disk.ySpeed/2
-        }
-
-
-        //checking for collision with a player disk
-        if(distance(puck.x,puck.y,disk.x,disk.y) < puck.radius + disk.radius && (disk.speed !== 0 || puck.speed !== 0)){
-            while(distance(puck.x,puck.y,disk.x,disk.y) < puck.radius + disk.radius){
-                puck.x -= puck.xSpeed /10
-                puck.y -= puck.ySpeed /10
-
-                disk.x -= disk.xSpeed /10
-                disk.y -= disk.ySpeed /10
+            if(i === 0){
+                disk.x -= disk.xSpeed/2
+                disk.y -= disk.ySpeed/2
             }
-            
+            else{
+                disk.x += disk.xSpeed/2
+                disk.y += disk.ySpeed/2
+            }
+        
 
-            let collisionAngle = direction(disk.x,disk.y,puck.x,puck.y)
+            //checking for collision with a player disk
+            if(distance(puck.x,puck.y,disk.x,disk.y) < puck.radius + disk.radius && (disk.speed !== 0 || puck.speed !== 0)){
+                while(distance(puck.x,puck.y,disk.x,disk.y) < puck.radius + disk.radius){
+                    puck.x -= puck.xSpeed /10
+                    puck.y -= puck.ySpeed /10
 
-            let angleDiff = Math.abs(collisionAngle - disk.direction)
+                    disk.x -= disk.xSpeed /10
+                    disk.y -= disk.ySpeed /10
+                }
+                
 
-            while(angleDiff > Math.PI){
-                angleDiff = Math.abs(angleDiff - 2*Math.PI)
+                let collisionAngle = direction(disk.x,disk.y,puck.x,puck.y)
+
+                let angleDiff = Math.abs(collisionAngle - disk.direction)
+
+                while(angleDiff > Math.PI){
+                    angleDiff = Math.abs(angleDiff - 2*Math.PI)
+                }
+
+                let newSpeed1 = (disk.speed * (((Math.PI/2) - angleDiff)/(Math.PI/2)))*1.1
+
+                let newDirection1 = collisionAngle
+
+                let newXY1 = findXY(newSpeed1,newDirection1)
+
+                
+
+                angleDiff = collisionAngle - puck.direction
+
+
+                let newDirection2 = puck.direction +angleDiff
+
+                let newSpeed2 = puck.speed * .4
+
+                let newXY2 = findXY(newSpeed2,newDirection2)
+
+
+
+
+                puck.xSpeed = newXY1.x + newXY2.x
+                puck.ySpeed = newXY1.y + newXY2.y
+
+                puck.goal = 0
+
+                socket.emit("puck info", puck)
             }
 
-            let newSpeed1 = (disk.speed * (((Math.PI/2) - angleDiff)/(Math.PI/2)))*1.1
-
-            let newDirection1 = collisionAngle
-
-            let newXY1 = findXY(newSpeed1,newDirection1)
-
-            
-
-            angleDiff = collisionAngle - puck.direction
-
-
-            let newDirection2 = puck.direction +angleDiff
-
-            let newSpeed2 = puck.speed * .4
-
-            let newXY2 = findXY(newSpeed2,newDirection2)
-
-
-
-
-            puck.xSpeed = newXY1.x + newXY2.x
-            puck.ySpeed = newXY1.y + newXY2.y
-
-            socket.emit("puck info", puck)
         }
-
-
         
         
     }
@@ -202,6 +224,14 @@ thisPlayer = new Player("Ashlyn","#ff0000")
 
 
 class GameScreen extends React.Component {  
+
+    state = {
+        score:{
+            red: 0,
+            blue: 0
+        },
+        playerNames: []
+    }
 
     //sets up game once the canvas mounts on screen
 
@@ -254,6 +284,18 @@ class GameScreen extends React.Component {
         socket.on("puck info response", function(puck){
             pucks[puck.id] = puck
         })
+
+        socket.on("goal response",(data) =>{
+            pucks.splice(data.id,1)
+
+            pucks.forEach(function(index){
+                index.id = pucks.indexOf(index)
+            })
+
+            this.setState({score: data.score})
+
+            pucks.push(data.puck)
+        })
     }
 
     //clears the entire canvas
@@ -276,38 +318,60 @@ class GameScreen extends React.Component {
 
             if(player.hasDisk === 1){
 
-                players[thisId].disk.direction = direction(player.disk.x,player.disk.y,player.mouse.x,player.mouse.y)
+                const disk  = players[thisId].disk
+
+                let prevX = disk.x
+                let prevY = disk.y
+
+                let avg = 0
 
                 if(distance(player.mouse.x,player.mouse.y,player.disk.x,player.disk.y) <= player.disk.maxSpeed){
 
-                    players[thisId].disk.xSpeed = player.mouse.x - players[thisId].disk.x
-                    players[thisId].disk.ySpeed = player.mouse.y - players[thisId].disk.y
-
-                    players[thisId].disk.speed = distance(0,0,players[thisId].disk.ySpeed,players[thisId].disk.xSpeed)
-
-                    players[thisId].disk.x = player.mouse.x
-                    players[thisId].disk.y = player.mouse.y
-
-
-
+                    disk.x = player.mouse.x
+                    disk.y = player.mouse.y
                    
                 }
                 else{
-                    const moveDist = findXY(player.disk.maxSpeed,players[thisId].disk.direction)
+                    const moveDist = findXY(player.disk.maxSpeed,direction(disk.x,disk.y,player.mouse.x,player.mouse.y))
 
-                    players[thisId].disk.x += moveDist.x
-                    players[thisId].disk.y += moveDist.y
-
-                    players[thisId].disk.xSpeed = moveDist.x
-                    players[thisId].disk.ySpeed = moveDist.y
-
-                    players[thisId].disk.speed = player.disk.maxSpeed
+                    disk.x += moveDist.x
+                    disk.y += moveDist.y
                 }
+
+                //getting x and y speed by averaging out the 3 previous speeds
+
+                disk.xSpeedArray.push(disk.x - prevX)
+                disk.ySpeedArray.push(disk.y - prevY)
+
+                if(disk.xSpeedArray.length > 3)
+                    disk.xSpeedArray.shift()
+
+                if(disk.ySpeedArray.length > 3)
+                    disk.ySpeedArray.shift()
+
+                disk.xSpeedArray.forEach(function(index){
+                    avg += index
+                })
+
+                disk.xSpeed = avg / disk.xSpeedArray.length
+
+                avg = 0
+
+                disk.ySpeedArray.forEach(function(index){
+                    avg += index
+                })
+
+                disk.ySpeed = avg / disk.ySpeedArray.length
+
+                disk.speed = distance(0,0,disk.xSpeed,disk.ySpeed)
+
+                disk.direction = direction(0,0,disk.xSpeed,disk.ySpeed)
 
             }
 
             pucks.forEach(function(puck){
-                movePuck(puck)
+                if(puck.goal === 0)
+                    movePuck(puck)
 
                 
             })
@@ -424,13 +488,16 @@ class GameScreen extends React.Component {
         //render pucks
 
         pucks.forEach(function(current){
-            draw.beginPath();
+            if(current.goal === 0){
 
-            draw.arc(current.x,current.y,current.radius,0,2*Math.PI)
-            
-            draw.fillStyle = "#ffffff"
-    
-            draw.fill();
+                draw.beginPath();
+
+                draw.arc(current.x,current.y,current.radius,0,2*Math.PI)
+                
+                draw.fillStyle = "#ffffff"
+        
+                draw.fill();
+            }
         })
 
         //render unclaimed disks
@@ -470,7 +537,7 @@ class GameScreen extends React.Component {
             unclaimedDisks.forEach(function(current){
 
                 if(distance(players[thisId].mouse.x,players[thisId].mouse.y,current.x,current.y) <= current.radius){
-                    players[thisId].disk = new Disk(current.x,current.y)
+                    players[thisId].disk = new Disk(current.x,current.y,current.team)
 
                     players[thisId].hasDisk = 1;
 
@@ -490,7 +557,14 @@ class GameScreen extends React.Component {
 
     render() {
         return(
+            <>
+            <p>
+                <span className="score" id="blue-score">{this.state.score.blue}</span>
+                <span className="score">  -  </span>
+                <span className="score" id="red-score">{this.state.score.red}</span>
+            </p>
             <canvas onMouseMove = {this.onMouseMove} onClick = {this.onClick} id ="canvas-a" ref="canvas" width="1200px" height="675px"/>
+            </>
         )
     }
 }

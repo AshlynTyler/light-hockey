@@ -53,26 +53,30 @@ let boundary = {
 
 let players = [];
 
-const colors = ["#ff0000","#0000ff","#00ff00"]
+const colors = ["#0000ff","#ff0000","#00ffaa","#ffaa00"]
 
 let pucks = [];
 
 let unclaimedDisks = [];
+
+let goalCount = 0;
 
 let score = {
   blue: 0,
   red: 0
 }
 
-function UnclaimedDisk(x,y){
+function UnclaimedDisk(x,y,team){
   this.x = x
 
   this.y = y
 
   this.radius = 25
+
+  this.team = team
 }
 
-let diskLocations = [{x: 50, y: 50},{x: 300, y: 50},{x: 50, y: 300},{x: 300, y: 300}]
+let diskLocations = [{x: 300, y: 225, team: "blue"},{x: 900, y: 225, team: "red"},{x: 300, y: 450, team: "blue"},{x: 900, y: 450, team: "red"}]
 
 function Puck(x = 600,y = 675/2,radius=15,points=10){
   this.x = x
@@ -92,69 +96,24 @@ function Puck(x = 600,y = 675/2,radius=15,points=10){
   this.radius = radius
 
   this.id = pucks.length
+
+  this.goal = 0
 }
 
-function movePuck(puck){
-  puck.x += puck.xSpeed
-
-  puck.y += puck.ySpeed
-
-  if(puck.x -puck.radius< boundary.left){
-
-    scoreGoal(puck,"red")
-
-    puck.x += (boundary.left - (puck.x - puck.radius))*2
-
-    puck.xSpeed = -puck.xSpeed
-  }
-  if(puck.x +puck.radius> boundary.right){
-
-    scoreGoal(puck,"blue")
-
-    puck.x += (boundary.right - (puck.x + puck.radius))*2
-
-    puck.xSpeed = -puck.xSpeed
-  }
-  if(puck.y -puck.radius< boundary.top){
-    puck.y += (boundary.top - (puck.y - puck.radius))*2
-
-    puck.ySpeed = -puck.ySpeed
-  }
-  if(puck.y +puck.radius> boundary.bottom){
-    puck.y += (boundary.bottom - (puck.y + puck.radius))*2
-
-    puck.ySpeed = -puck.ySpeed
-  }
-
-  puck.speed = distance(0,0,puck.xSpeed,puck.ySpeed)
-
-  puck.direction = direction(0,0,puck.xSpeed,puck.ySpeed)
-
-  puck.speed -= puck.friction
-
-  if(puck.speed < 0){
-      puck.speed = 0
-  }
-
-  if(puck.speed > puck.maxSpeed)
-      puck.speed = puck.maxSpeed
-
-  let newSpeeds = findXY(puck.speed,puck.direction)
-
-  puck.xSpeed = newSpeeds.x
-  puck.ySpeed = newSpeeds.y
 
 
-    return puck
-  
-}
-
-function scoreGoal(puck,teamScore){
+function scoreGoal(puck,team){
   if(puck.y > boundary.top + (boundary.bottom-boundary.top)/3 && puck.y < boundary.top + (boundary.bottom-boundary.top)*2/3){
 
-    io.in("test-room").emit("goal", {id: puck.id, team: "red", points: puck.points})
-
     pucks.splice(puck.id,1)
+
+    pucks.forEach(function(index){
+      index.id = pucks.indexOf(index)
+    })
+
+    console.log("ping")
+
+    io.in("test-room").emit("goal", {id: puck.id, team: team, points: puck.points, puck: new Puck()})
   }
 
 }
@@ -164,10 +123,6 @@ function gameStep(){
     movePuck(puck)
   })
 }
-
-let gameInterval = setInterval(() =>{
-  this.gameStep()
-},(1000/60))
 
 // handling socket connections and emissions.
 io.on('connection', function(socket){
@@ -185,11 +140,11 @@ io.on('connection', function(socket){
 
     players.push(player)
 
-      unclaimedDisks.push(new UnclaimedDisk(diskLocations[players.length -1 ].x,diskLocations[players.length -1].y))
+      unclaimedDisks.push(new UnclaimedDisk(diskLocations[players.length -1 ].x,diskLocations[players.length -1].y,diskLocations[players.length -1].team))
 
     socket.emit("player join response", {id: player.id, players: players, disks: unclaimedDisks})
 
-    socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks})
+    socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks, score: score})
 
 
   })
@@ -204,8 +159,6 @@ io.on('connection', function(socket){
     unclaimedDisks = data
 
     if(unclaimedDisks.length === 0 && pucks.length === 0){
-
-      console.log("success!")
       pucks.push(new Puck())
     }
 
@@ -216,6 +169,33 @@ io.on('connection', function(socket){
     pucks[puck.id] = puck
 
     socket.broadcast.emit("puck info response", puck)
+
+    goalCount = 0;
+  })
+
+  socket.on("goal", function(data){
+    goalCount += 1
+
+    if(goalCount === players.length){
+      goalCount = 0
+
+      if(data.team === "red"){
+        score.red += data.puck.points
+      }
+      else{
+        score.blue += data.puck.points
+      }
+
+      pucks.splice(data.id,1)
+
+      pucks.forEach(function(index){
+          index.id = pucks.indexOf(index)
+      })
+
+      io.in("test-room").emit("goal response",{score: score, id: data.puck.id, puck: new Puck()})
+
+
+    }
   })
 });
 

@@ -1,9 +1,16 @@
+@font-face {
+  font-family: digitalFont;
+  src: url(digital.ttf)
+}
+
+
 *{
   margin-left: auto;
   margin-right: auto;
   text-align: center;
   font-size: 20px;
   color: #ccddff;
+  font-family: digitalFont;
 }
 
 body{
@@ -12,4 +19,21 @@ body{
 
 #canvas-a{
   cursor: none;
+}
+
+.score{
+  font-size: 80px;
+
+  margin-top: 40px;
+
+  margin-bottom: 40px;
+}
+
+#blue-score{
+  color: #0000ff
+
+}
+
+#red-score{
+  color: #ff0000
 }
