@@ -20,6 +20,8 @@ let unclaimedDisks = [];
 
 let pucks = [];
 
+let thisCanvas;
+
 let boundary = {
     top: 10,
     left: 10,
@@ -236,10 +238,14 @@ class GameScreen extends React.Component {
     //sets up game once the canvas mounts on screen
 
     componentDidMount() {
+        console.log("wtf")
+
         const canvas = this.refs.canvas
         draw = canvas.getContext("2d")
 
         draw.translate(.5,.5);
+
+        thisCanvas = this
 
         
 
@@ -255,12 +261,18 @@ class GameScreen extends React.Component {
 
         socket.emit("player join", thisPlayer)
 
-        socket.on("player join response", function(data){
+        socket.on("player join response", (data) =>{
             players = data.players
 
             thisId = data.id
 
             unclaimedDisks = data.disks
+
+            console.log(this)
+
+            this.setState({score: data.score})
+
+            
         })
 
         socket.on("other join response", function(data){
@@ -278,7 +290,6 @@ class GameScreen extends React.Component {
 
             pucks = data.pucks
 
-            console.log(pucks)
         })
 
         socket.on("puck info response", function(puck){
@@ -336,6 +347,34 @@ class GameScreen extends React.Component {
 
                     disk.x += moveDist.x
                     disk.y += moveDist.y
+                }
+
+                //pushing disk off of boundries
+
+                let divider = this.refs.canvas.offsetWidth/2
+
+                if(disk.x + disk.radius > divider  && disk.team === "blue"){
+                    disk.x = divider - disk.radius
+                }
+
+                if(disk.x - disk.radius < divider  && disk.team === "red"){
+                    disk.x = divider + disk.radius
+                }
+
+                if(disk.y - disk.radius < boundary.top){
+                    disk.y = boundary.top + disk.radius
+                }
+
+                if(disk.x - disk.radius < boundary.left){
+                    disk.x = boundary.left + disk.radius
+                }
+
+                if(disk.y + disk.radius > boundary.bottom){
+                    disk.y = boundary.bottom - disk.radius
+                }
+
+                if(disk.x + disk.radius > boundary.right){
+                    disk.x = boundary.right - disk.radius
                 }
 
                 //getting x and y speed by averaging out the 3 previous speeds

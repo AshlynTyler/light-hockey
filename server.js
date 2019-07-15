@@ -142,9 +142,9 @@ io.on('connection', function(socket){
 
       unclaimedDisks.push(new UnclaimedDisk(diskLocations[players.length -1 ].x,diskLocations[players.length -1].y,diskLocations[players.length -1].team))
 
-    socket.emit("player join response", {id: player.id, players: players, disks: unclaimedDisks})
+    socket.emit("player join response", {id: player.id, players: players, disks: unclaimedDisks, score: score})
 
-    socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks, score: score})
+    socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks})
 
 
   })
