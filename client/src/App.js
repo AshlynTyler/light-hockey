@@ -17,7 +17,7 @@ class App extends React.Component {
 
   componentWillMount() {
     const { endpoint } = this.state.endpoint;
-    this.state.socket = io("http://localhost:3001");
+    this.state.socket = io(process.env.PORT);
   }
   
   render(){
