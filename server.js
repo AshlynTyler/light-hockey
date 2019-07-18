@@ -168,10 +168,17 @@ io.on('connection', function(socket){
   socket.on("create preroom",function(data){
     let room = new PreRoom(data.max)
 
-    
+    data.player.ready = false
+
+    data.player.id = 0
 
     room.players.push(data.player)
 
+    preRooms.push(room)
+
+    socket.emit("create preroom response",preRooms)
+
+    socket.broadcast.emit("other preroom response",preRooms)
   })
 
   
