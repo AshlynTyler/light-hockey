@@ -61,6 +61,38 @@ let unclaimedDisks = [];
 
 let goalCount = 0;
 
+let idIncrement = 0
+
+const preRooms = []
+
+function PreRoom(max){
+  this.players = []
+
+  this.maxPlayers = max
+
+  this.id = "room-" + idIncrement
+
+  this.joined = false
+
+  idIncrement++
+}
+
+const rooms = []
+
+function Room(id){
+  this.players = []
+
+  this.pucks = [];
+
+  this.unclaimedDisks = []
+
+  this.goalCount = 0;
+
+  this.id = id
+
+  
+}
+
 let score = {
   blue: 0,
   red: 0
@@ -133,6 +165,23 @@ io.on('connection', function(socket){
 
   socket.join("test-room")
 
+  socket.on("create preroom",function(data){
+    let room = new PreRoom(data.max)
+
+    
+
+    room.players.push(data.player)
+
+  })
+
+  
+
+  socket.on("create game",function(){
+    room = new Room()
+
+    socket.in("lobby").emit("create room response", room)
+  })
+
   socket.on("player join", function(player){
     player.id = players.length
 
@@ -145,7 +194,6 @@ io.on('connection', function(socket){
     socket.emit("player join response", {id: player.id, players: players, disks: unclaimedDisks, score: score})
 
     socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks})
-
 
   })
 
