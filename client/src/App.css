@@ -17,6 +17,12 @@ body{
   background: #110011;
 }
 
+.flex-container{
+  display: flex;
+}
+
+/* game room styling */
+
 #canvas-a{
   cursor: none;
 }
@@ -37,3 +43,134 @@ body{
 #red-score{
   color: #ff0000
 }
+
+
+
+/* lobby styling */
+
+h1{
+  font-size: 60px;
+
+  margin-top: 30px;
+
+  margin-bottom: 30px;
+}
+
+.button{
+  border-width: 2px;
+  cursor: pointer;
+
+  padding: 5px;
+}
+
+#user{
+  width: 40%;
+
+  border-width: 2px;
+  border-color: #999999;
+}
+
+#room-list{
+  width: 40%;
+}
+
+#lobby-container{
+  justify-content: space-around;
+}
+
+#create-room{
+  height: 200px;
+
+  justify-content: space-around;
+
+  border-width: 2px;
+  border-color: #ffaa00;
+  position: relative;
+
+  margin: 5px;
+}
+
+.p-button{
+  color: #ffaa0077;
+  border-color: #ffaa0077;
+}
+
+.selected{
+  color: #ffaa00;
+  border-color: #ffaa00;
+  cursor: auto;
+}
+
+.create-button{
+  color: #0000cc;
+  border-color: #0000cc;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.room{
+  justify-content: space-around;
+
+  flex-wrap: wrap;
+
+  position: relative;
+
+  border-color: #0000cc;
+
+  margin: 5px;
+
+  padding: 10px;
+}
+
+.room-name{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.player-icon{
+  border-width: 2px;
+  
+  padding: 5px;
+
+  width: 40%;
+}
+
+.green{
+  border-color: #00cc00;
+
+  color: #00cc00;
+}
+
+.red{
+  border-color: #cc0000;
+
+  color: #cc0000;
+}
+
+.join-button{
+  color: #ffaa00;
+  border-color: #ffaa00;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.ready-button{
+  color: #00cc00;
+  border-color: #00cc00;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.leave-button{
+  color: #cc0000;
+  border-color: #cc0000;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+
