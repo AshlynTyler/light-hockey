@@ -27,8 +27,8 @@ class Lobby extends React.Component {
             joined: false
         }
 
-        socket.on("create preroom response", function(rooms){
-            rooms[rooms.length-1].joined = true
+        socket.on("create preroom response", (rooms) =>{
+            player.room = rooms[rooms.length-1].id
 
             player.id = 0
 
@@ -39,19 +39,20 @@ class Lobby extends React.Component {
             this.setState({rooms: rooms, player: player})
         })
 
-        socket.on("other preroom respons", function(rooms){
+        socket.on("other preroom response", (rooms) =>{
             this.setState({rooms: rooms})
         })
     }
 
-    twoPlayer = function(){
+    changeMax = () =>{
+        console.log("click event fired")
         if(this.state.max === 2)
             this.setState({max: 4})
         else
             this.setState({max: 2})
     }
 
-    createRoom = function(){
+    createRoom = () =>{
         socket.emit("create preroom", {player: this.state.player, max: this.state.max})
     }
 
@@ -68,6 +69,12 @@ class Lobby extends React.Component {
     }
 
     render(){
+
+        const  max = this.state.max;
+
+        const  rooms = this.state.rooms;
+
+        const thisPlayer = this.state.player
         return(
             <>
             <h1>Light Hockey</h1>
@@ -76,54 +83,48 @@ class Lobby extends React.Component {
                 <div id = "user"></div>
 
                 <div id = "room-list">
-                    {function(){
-                        if(!this.state.player.joined){
-                            if(this.state.max === 2)
-                                return(
-                                    <div id = "create-room" className = "flex-container">
-                                        <div className = "p-button button selected" >2 Player</div>
-                                        <div className = "p-button button" onClick = {() => this.changeMax}>4 Player</div>
-                                        <div className = "create-button button" onClick = {() => this.createRoom}>Create Room</div>
-                                    </div>
-                                )
-                            else
-                                return(
-                                    <div id = "create-room">
-                                        <div className = "p-button button" onClick = {() => this.changeMax}>2 Player</div>
-                                        <div className = "p-button button selected">4 Player</div>
-                                        <div className = "create-button button">Create Room</div>
-                                    </div>
-                                )
-                        }
-                    }}
-                    {this.state.rooms.map(function(room){
+                    {!thisPlayer.joined ? (
+                        (max === 2) ? (
+                            <div id = "create-room" className = "flex-container">
+                                <div className = "p-button button selected" >2 Player</div>
+                                <div className = "p-button button" onClick = {this.changeMax}>4 Player</div>
+                                <div className = "create-button button" onClick = {this.createRoom}>Create Room</div>
+                            </div>                           
+                        ) :
+                        (
+                            <div id = "create-room" className = "flex-container">
+                                <p className = "p-button button" onClick = {this.changeMax}>2 Player</p>
+                                <p className = "p-button button selected">4 Player</p>
+                                <p className = "create-button button" onClick = {this.createRoom}>Create Room</p>
+                            </div>
+                        )
+                    ):(<></>)}
+                    {rooms.map(function(room){
                         return(
-                            <div className = "flex-container room">
+                            <div className = "flex-container room" key ={room.id}>
                                 <p className = "room-name">{room.id}</p>
+                                <p className = "num-players">{room.maxPlayers}-player</p>
                                 {room.players.map(function(player){
                                     if(player.ready)
                                         return(
-                                            <div className = "player-icon green">{player.name}</div>
+                                            <div className = "player-icon green" key = {player.id}>{player.name}</div>
                                         )
                                     else
                                         return(
-                                            <div className = "player-icon red">{player.name}</div>
+                                            <div className = "player-icon red" key = {player.id}>{player.name}</div>
                                         )
                                 })}
 
-                                {function(){
-                                    if(room.joined)
-                                        return(
+                                {thisPlayer.room === room.id ? (
                                             <>
                                                 <div className = "leave-button button">leave</div>
                                                 <div className = "ready-button button">ready</div>
                                             </>
-                                        )
-                                    else if(room.players < room.maxPlayers)
-                                        return(
+                                        ): (room.players < room.maxPlayers ? (
                                             <div className = "join-button button" onClick = {() => this.joinRoom(room)}>join</div>
+                                        ):(<></>)
                                         )
-                                }}
+                                }
                             </div>
                             
                         )
@@ -134,3 +135,5 @@ class Lobby extends React.Component {
         )
     }
 }
+
+export {Lobby}
