@@ -42,6 +42,16 @@ class Lobby extends React.Component {
         socket.on("other preroom response", (rooms) =>{
             this.setState({rooms: rooms})
         })
+
+        socket.on("rooms change response", (rooms) =>{
+            this.setState({rooms: rooms})
+        })
+
+        socket.on("enter lobby response", (rooms) =>{
+            this.setState({rooms: rooms})
+        })
+
+        socket.emit("enter lobby")
     }
 
     changeMax = () =>{
@@ -56,16 +66,62 @@ class Lobby extends React.Component {
         socket.emit("create preroom", {player: this.state.player, max: this.state.max})
     }
 
-    joinRoom = function(room){
-        player.id = room.length
+    joinRoom = (room) =>{
+        player.id = room.players.length
 
         room.joined = true;
 
         player.joined = true;
 
+        player.room = room.id;
+
         player.ready = false
 
-        room.push(player)
+        room.players.push(player)
+
+        this.setState({player: player})
+
+        socket.emit("rooms change", this.state.rooms)
+    }
+
+    leaveRoom = (room) =>{
+        room.joined = false;
+
+        player.joined = false
+
+        player.room = ""
+
+        room.players.splice(player.id,1)
+
+        for(let i = player.id; i < room.players.length; i++){
+            room.players[i].id--
+        }
+
+        if(room.players.length === 0){
+            this.state.rooms.splice(this.state.rooms.indexOf(room),1)
+        }
+
+
+        this.setState({player: player})
+
+        socket.emit("rooms change", this.state.rooms)
+    }
+
+    ready = (room) =>{
+        player.ready = true;
+
+        let readyNum = 0
+
+        if(room.maxPlayers === room.players.length){
+            room.players.forEach((player) =>{
+                if(player.ready === true)
+                    readyNum++
+            })
+
+            if(readyNum === room.maxPlayers){
+                this.emit("start game", room)
+            }
+        }
     }
 
     render(){
@@ -99,7 +155,7 @@ class Lobby extends React.Component {
                             </div>
                         )
                     ):(<></>)}
-                    {rooms.map(function(room){
+                    {rooms.map((room) =>{
                         return(
                             <div className = "flex-container room" key ={room.id}>
                                 <p className = "room-name">{room.id}</p>
@@ -117,10 +173,10 @@ class Lobby extends React.Component {
 
                                 {thisPlayer.room === room.id ? (
                                             <>
-                                                <div className = "leave-button button">leave</div>
+                                                <div className = "leave-button button" onClick = {() => this.leaveRoom(room)}>leave</div>
                                                 <div className = "ready-button button">ready</div>
                                             </>
-                                        ): (room.players < room.maxPlayers ? (
+                                        ): (room.players.length < room.maxPlayers && player.joined === false ? (
                                             <div className = "join-button button" onClick = {() => this.joinRoom(room)}>join</div>
                                         ):(<></>)
                                         )

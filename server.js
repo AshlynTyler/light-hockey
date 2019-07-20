@@ -63,7 +63,7 @@ let goalCount = 0;
 
 let idIncrement = 0
 
-const preRooms = []
+let preRooms = []
 
 function PreRoom(max){
   this.players = []
@@ -163,7 +163,11 @@ io.on('connection', function(socket){
     console.log('user disconnected');
   });
 
-  socket.join("test-room")
+  socket.join("lobby")
+
+  socket.on("enter lobby", function(){
+    socket.emit("enter lobby response", preRooms)
+  })
 
   socket.on("create preroom",function(data){
     let room = new PreRoom(data.max)
@@ -178,10 +182,14 @@ io.on('connection', function(socket){
 
     socket.emit("create preroom response",preRooms)
 
-    socket.broadcast.emit("other preroom response",preRooms)
+    socket.to("lobby").emit("other preroom response",preRooms)
   })
 
-  
+  socket.on("rooms change", function(rooms){
+    preRooms = rooms
+
+    socket.to("lobby").emit("rooms change response", rooms)
+  })
 
   socket.on("create game",function(){
     room = new Room()
