@@ -238,7 +238,6 @@ class GameScreen extends React.Component {
     //sets up game once the canvas mounts on screen
 
     componentDidMount() {
-        console.log("wtf")
 
         const canvas = this.refs.canvas
         draw = canvas.getContext("2d")

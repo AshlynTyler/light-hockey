@@ -90,7 +90,10 @@ function Room(id){
 
   this.id = id
 
-  
+  this.score = {
+    blue: 0,
+    red: 0
+  }
 }
 
 let score = {
@@ -165,6 +168,8 @@ io.on('connection', function(socket){
 
   socket.join("lobby")
 
+  socket.room = ""
+
   socket.on("enter lobby", function(){
     socket.emit("enter lobby response", preRooms)
   })
@@ -180,85 +185,108 @@ io.on('connection', function(socket){
 
     preRooms.push(room)
 
+    socket.join(room.id)
+
     socket.emit("create preroom response",preRooms)
 
     socket.to("lobby").emit("other preroom response",preRooms)
   })
 
-  socket.on("rooms change", function(rooms){
-    preRooms = rooms
+  socket.on("join room", function(data){
+    preRooms = data.rooms
 
+    socket.join(data.id)
+
+    socket.to("lobby").emit("rooms change response", data.rooms)
+  })
+  socket.on("leave room", function(data){
+    preRooms = data.rooms
+
+    socket.leave(data.id)
+
+    socket.to("lobby").emit("rooms change response", data.rooms)
+  })
+
+  socket.on("ready", function(rooms){
     socket.to("lobby").emit("rooms change response", rooms)
   })
 
-  socket.on("create game",function(){
-    room = new Room()
+  socket.on("start game",function(roomId){
+    room = new Room(roomId)
 
-    socket.in("lobby").emit("create room response", room)
-  })
-
-  socket.on("player join", function(player){
-    player.id = players.length
-
-    player.color = colors[player.id]
-
-    players.push(player)
-
-      unclaimedDisks.push(new UnclaimedDisk(diskLocations[players.length -1 ].x,diskLocations[players.length -1].y,diskLocations[players.length -1].team))
-
-    socket.emit("player join response", {id: player.id, players: players, disks: unclaimedDisks, score: score})
-
-    socket.broadcast.emit("other join response", {players: players, disks: unclaimedDisks})
+    io.in(roomId).emit("start game response", room)
 
   })
 
-  socket.on("player info", function(player){
-    players[player.id] = player
+  socket.on("start game events", function(room){
+  
+    let roomId = room.id
+    //in-game emissions/responses
+    socket.in(roomId).on("player join", function(player){
+      console.log("joined!")
+      player.id = room.players.length
 
-    socket.broadcast.emit("player info response", players[player.id])
-  })
+      player.color = colors[player.id]
 
-  socket.on("claim disk", function(data){
-    unclaimedDisks = data
+      room.players.push(player)
 
-    if(unclaimedDisks.length === 0 && pucks.length === 0){
-      pucks.push(new Puck())
-    }
+        room.unclaimedDisks.push(new UnclaimedDisk(diskLocations[room.players.length -1 ].x,diskLocations[room.players.length -1].y,diskLocations[room.players.length -1].team))
 
-    io.in("test-room").emit("claim disk response", {disks: unclaimedDisks, pucks: pucks})
-  })
+      socket.emit("player join response", {id: player.id, players: room.players, disks: room.unclaimedDisks, score: room.score})
 
-  socket.on("puck info", function(puck){
-    pucks[puck.id] = puck
+      socket.broadcast.emit("other join response", {players: room.players, disks: room.unclaimedDisks})
 
-    socket.broadcast.emit("puck info response", puck)
+    })
 
-    goalCount = 0;
-  })
+    socket.in(roomId).on("player info", function(player){
+      room.players[player.id] = player
 
-  socket.on("goal", function(data){
-    goalCount += 1
+      socket.broadcast.emit("player info response", room.players[player.id])
+    })
 
-    if(goalCount === players.length){
-      goalCount = 0
+    socket.in(roomId).on("claim disk", function(data){
+      room.unclaimedDisks = data
 
-      if(data.team === "red"){
-        score.red += data.puck.points
-      }
-      else{
-        score.blue += data.puck.points
+      if(room.unclaimedDisks.length === 0 && room.pucks.length === 0){
+        room.pucks.push(new Puck())
       }
 
-      pucks.splice(data.id,1)
+      io.in("test-room").emit("claim disk response", {disks: room.unclaimedDisks, pucks: room.pucks})
+    })
 
-      pucks.forEach(function(index){
-          index.id = pucks.indexOf(index)
-      })
+    socket.in(roomId).on("puck info", function(puck){
+      room.pucks[puck.id] = puck
 
-      io.in("test-room").emit("goal response",{score: score, id: data.puck.id, puck: new Puck()})
+      socket.broadcast.emit("puck info response", puck)
+
+      room.goalCount = 0;
+    })
+
+    socket.in(roomId).on("goal", function(data){
+      room.goalCount += 1
+
+      if(room.goalCount === room.players.length){
+        room.goalCount = 0
+
+        if(data.team === "red"){
+          room.score.red += data.puck.points
+        }
+        else{
+          room.score.blue += data.puck.points
+        }
+
+        room.pucks.splice(data.id,1)
+
+        room.pucks.forEach(function(index){
+            index.id = room.pucks.indexOf(index)
+        })
+
+        io.in("test-room").emit("goal response",{score: room.score, id: data.puck.id, puck: new Puck()})
 
 
-    }
+      }
+    })
+
   })
 });
 
