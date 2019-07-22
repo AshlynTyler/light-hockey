@@ -1,5 +1,5 @@
 import React from 'react';
-import './../public/App.css';
+import './App.css';
 import {GameScreen} from "./GameScreen"
 import io from "socket.io-client";
 import {Lobby} from "./Lobby"

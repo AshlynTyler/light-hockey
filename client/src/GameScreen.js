@@ -1,6 +1,6 @@
 import React from 'react';
 import io from "socket.io-client";
-import './../public/App.css';
+import './App.css';
 import { isThisMonth } from 'date-fns';
 
 let socket;
