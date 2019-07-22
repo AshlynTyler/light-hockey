@@ -289,8 +289,6 @@ class GameScreen extends React.Component {
 
         thisPlayer.color = this.props.userColor
 
-        console.log(thisPlayer.name)
-
         socket.emit("player join", thisPlayer)
 
         socket.on("player join response", (data) =>{

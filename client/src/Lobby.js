@@ -66,7 +66,6 @@ class Lobby extends React.Component {
     }
 
     changeMax = () =>{
-        console.log("click event fired")
         if(this.state.max === 2)
             this.setState({max: 4})
         else
@@ -228,8 +227,6 @@ class Lobby extends React.Component {
             blue = "0" + blue
 
         player.color = `#${red}${green}${blue}`
-
-        console.log(player.color)
 
         this.state.rooms.forEach((room) =>{
             if(room.id === player.room){
