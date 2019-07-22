@@ -15,6 +15,7 @@ class App extends React.Component {
       socket: {},
       userName: "guest",
       userColor: "#ff0000",
+      userColorValue: Math.floor(Math.random() * 600 + 1),
       inGame: false
     };
   }
@@ -31,7 +32,7 @@ class App extends React.Component {
 
 
       this.state.socket.emit("start game events", data.roomId)
-      this.setState({userName:data.player.name, userColor: data.player.color, inGame: true})
+      this.setState({userName:data.player.name, userColor: data.player.color, userColorValue: data.player.colorValue, inGame: true})
     })
 
     this.state.socket.on("end game response", () =>{
@@ -46,7 +47,7 @@ class App extends React.Component {
       );
     else
       return(
-        <Lobby userSocket={this.state.socket} userName = {this.state.userName} userColor = {this.state.userColor}/>
+        <Lobby userSocket={this.state.socket} userName = {this.state.userName} userColor = {this.state.userColor} userColorValue = {this.state.userColorValue}/>
       )
     }
 }

@@ -76,6 +76,8 @@ h1{
   border-color: #999999;
 
   border-style: solid;
+
+  height: 300px;
 }
 
 #room-list{
@@ -274,7 +276,7 @@ h1{
   bottom: 0;
 }
 
-input{
+#nameInput{
   background: none;
 
   border-width: 2px;
@@ -282,10 +284,58 @@ input{
 
   border-style: solid;
 
-  margin-top: 30px;
+  margin-top: 60px;
 
   margin-left: 5px;
 
+  margin-bottom: 70px;
+
   user-select: text;
   -moz-user-select: text;
+}
+
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 80%; /* Full-width */
+  height: 5px; /* Specified height */
+  background-image: url("hue-scale.png");
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  -moz-appearance: none;
+  appearance: none;
+  width: 24x; /* Set a specific slider handle width */
+  height: 24px; /* Slider handle height */
+  background: #ffffff55;
+  cursor: pointer; /* Cursor on hover */
+
+  border-radius: 12px;
+
+  border: none;
+}
+
+
+.slider::-moz-range-thumb {
+
+  -moz-appearance: none;
+  width: 24px; /* Set a specific slider handle width */
+  height: 24px; /* Slider handle height */
+  background: #ffffffaa;
+  cursor: pointer; /* Cursor on hover */
+
+  border-radius: 12px;
+
+  border: none;
 }

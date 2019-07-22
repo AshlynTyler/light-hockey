@@ -14,7 +14,8 @@ class Lobby extends React.Component {
         player: {
             name: this.props.userName,
             color: this.props.userColor,
-            joined: false
+            joined: false,
+            colorValue: this.props.userColorValue
         },
         
     }
@@ -25,8 +26,11 @@ class Lobby extends React.Component {
         player = {
             name: this.props.userName,
             color: this.props.userColor,
-            joined: false
+            joined: false,
+            colorValue: this.props.userColorValue
         }
+
+        this.colorChange(player.colorValue)
 
         socket.on("create preroom response", (rooms) =>{
             player.room = rooms[rooms.length-1].id
@@ -164,6 +168,80 @@ class Lobby extends React.Component {
         this.setState({player: player});
     }
 
+    handleColorChange = (event) =>{
+        this.colorChange(event.target.value)
+    }
+
+    colorChange = (value) =>{
+
+        player.colorValue = value
+
+        let red = 0;
+
+        let green = 0;
+
+        let blue = 0;
+
+        if(value <= 100 || value > 500){
+            red = 255
+        }
+
+        if(value > 100 && value <= 200)
+            red = 255 - ((value -100) *2.55)
+
+        if(value > 400 && value <= 500)
+            red = ((value -400) *2.55)
+
+        if(value > 100 && value <= 300)
+            green = 255
+
+        if(value <= 100)
+            green = ((value) *2.55)
+
+        if(value > 300 && value <= 400)
+            green = 255 - ((value -300) *2.55)
+
+        if(value > 300 && value <= 500)
+            blue = 255
+
+        if(value > 200 && value <= 300)
+            blue = ((value -200) *2.55)
+
+        if(value > 500)
+            blue = 255 - ((value -500) *2.55)
+        
+        red = Math.round(red).toString(16)
+
+        green = Math.round(green).toString(16)
+
+        blue = Math.round(blue).toString(16)
+
+        if(red.length === 1)
+            red = "0" + red
+
+        if(green.length === 1)
+            green = "0" + green
+
+        if(blue.length === 1)
+            blue = "0" + blue
+
+        player.color = `#${red}${green}${blue}`
+
+        console.log(player.color)
+
+        this.state.rooms.forEach((room) =>{
+            if(room.id === player.room){
+                room.players[player.id].color = player.color
+
+                room.players[player.id].colorValue = player.colorValue
+
+                socket.emit("ready", this.state.rooms)
+            }
+        })
+
+        this.setState({player: player});
+    }
+
     render(){
 
         const  max = this.state.max;
@@ -179,7 +257,11 @@ class Lobby extends React.Component {
                 <div id = "user">
                 <label>
                     Username:
-                    <input type="text" value={this.state.player.name} onChange={this.handleChange} />
+                    <input type="text" id = "nameInput" style={{color: this.state.player.color}} value={this.state.player.name} onChange={this.handleChange} />
+
+                    <p> Color:</p>
+
+                    <input type="range" min="1" max="600" value={this.state.player.colorValue} className="slider" id="colorRange" onChange={this.handleColorChange} onLoad={this.colorChange}/>
                 </label>
                 </div>
 
@@ -208,11 +290,11 @@ class Lobby extends React.Component {
                                 {room.players.map((player) =>{
                                     if(player.ready)
                                         return(
-                                            <div className = "player-icon green" key = {player.id}>{player.name}</div>
+                                            <div className = "player-icon green" style ={{color: player.color}} key = {player.id}>{player.name}</div>
                                         )
                                     else
                                         return(
-                                            <div className = "player-icon red" key = {player.id}>{player.name}</div>
+                                            <div className = "player-icon red" style ={{color: player.color}} key = {player.id}>{player.name}</div>
                                         )
                                 })}
 

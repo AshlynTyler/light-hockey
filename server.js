@@ -243,8 +243,6 @@ io.on('connection', function(socket){
     socket.on("player join", function(player){
       player.id = room.players.length
 
-      player.color = colors[player.id]
-
       room.players.push(player)
 
       room.unclaimedDisks.push(new UnclaimedDisk(diskLocations[room.players.length -1 ].x,diskLocations[room.players.length -1].y,diskLocations[room.players.length -1].team,room.players.length-1))
