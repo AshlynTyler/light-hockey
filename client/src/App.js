@@ -27,7 +27,11 @@ class App extends React.Component {
 
       this.state.socket.emit("start game events", roomId)
       this.setState({inGame: true})
-  })
+    })
+
+    this.state.socket.on("end game response", () =>{
+      this.setState({inGame: false})
+    })
   }
   
   render(){

@@ -18,6 +18,8 @@ let thisId;
 
 let unclaimedDisks = [];
 
+let puckTimers = [];
+
 let pucks = [];
 
 let thisCanvas;
@@ -60,6 +62,15 @@ function Disk(x,y,team){
     this.ySpeedArray = []
 
     this.team = team
+}
+
+function PuckTimer(puck,y = 675/2, x = 600){
+    this.x = x
+    this.y = y
+
+    this.time = 3000
+
+    this.puck = puck
 }
 
 
@@ -170,11 +181,18 @@ function movePuck(puck){
             //checking for collision with a player disk
             if(distance(puck.x,puck.y,disk.x,disk.y) < puck.radius + disk.radius && (disk.speed !== 0 || puck.speed !== 0)){
                 while(distance(puck.x,puck.y,disk.x,disk.y) < puck.radius + disk.radius){
+
+                    let loopBreak = 50;
                     puck.x -= puck.xSpeed /10
                     puck.y -= puck.ySpeed /10
 
                     disk.x -= disk.xSpeed /10
                     disk.y -= disk.ySpeed /10
+
+                    loopBreak--
+
+                    if(loopBreak === 0)
+                        break
                 }
                 
 
@@ -232,7 +250,8 @@ class GameScreen extends React.Component {
             red: 0,
             blue: 0
         },
-        playerNames: []
+        playerNames: [],
+        winner: "none"
     }
 
     //sets up game once the canvas mounts on screen
@@ -248,7 +267,7 @@ class GameScreen extends React.Component {
 
         
 
-        let gameInterval = setInterval(() =>{
+        gameInterval = setInterval(() =>{
             this.gameStep()
         },(1000/60))
 
@@ -287,7 +306,8 @@ class GameScreen extends React.Component {
         socket.on("claim disk response", function(data){
             unclaimedDisks = data.disks
 
-            pucks = data.pucks
+            if(data.newpuck)
+                puckTimers.push(new PuckTimer(data.pucks[data.pucks.length -1]))
 
         })
 
@@ -304,7 +324,14 @@ class GameScreen extends React.Component {
 
             this.setState({score: data.score})
 
-            pucks.push(data.puck)
+            if(data.score.blue === 15){
+                this.setState({winner: "blue"})
+            }
+            else if(data.score.red === 15){
+                this.setState({winner: "red"})
+            }
+            else
+                puckTimers.push(new PuckTimer(data.puck))
         })
     }
 
@@ -376,6 +403,17 @@ class GameScreen extends React.Component {
                     disk.x = boundary.right - disk.radius
                 }
 
+                puckTimers.forEach(function(timer){
+                    if(distance(disk.x,disk.y,timer.x,timer.y) < 100 + disk.radius){
+
+                        let newXY = findXY(100 +disk.radius,direction(timer.x,timer.y,disk.x,disk.y))
+
+                        disk.x =  timer.x + newXY.x
+
+                        disk.y = timer.y + newXY.y
+                    }
+                })
+
                 //getting x and y speed by averaging out the 3 previous speeds
 
                 disk.xSpeedArray.push(disk.x - prevX)
@@ -415,6 +453,16 @@ class GameScreen extends React.Component {
             })
 
             socket.emit("player info", players[thisId])
+
+            puckTimers.forEach(function(timer){
+                timer.time -= 1000/50
+
+                if(timer.time < 1){
+                    pucks.push(timer.puck)
+
+                    puckTimers.splice(puckTimers.indexOf(timer),1)
+                }
+            })
 
         }
 
@@ -553,6 +601,64 @@ class GameScreen extends React.Component {
             draw.stroke();
         }
 
+        //render puck timer
+
+        draw.textAlign = "center"
+
+        draw.textBaseline = "middle"
+
+        draw.font = '100px digitalfont'
+
+        draw.fillStyle = "#ffffff"
+
+        draw.lineWidth = 10
+
+        draw.strokeStyle = "#ffffffbb"
+
+        puckTimers.forEach((timer) => {
+            draw.fillText((Math.ceil(timer.time/1000)),width/2,height/2+10)
+
+            draw.beginPath()
+            draw.arc(width/2,height/2,100,(1.5 - timer.time/1500)*Math.PI,1.5*Math.PI)
+
+            draw.stroke()
+        })
+
+        //render win message
+
+        if(this.state.winner === "red"){
+            
+            draw.font = '60px digitalfont'
+
+            draw.fillStyle = "#ff0000"
+
+            draw.textAlign = "center"
+
+            draw.fillText("Red Team Wins!", width/2,height/2)
+
+            draw.font = '30px digitalfont'
+
+            draw.fillStyle = "#ffffff"
+
+            draw.fillText("Click anywhere to return to the lobby.", width/2,height/2 + 60)
+        }
+
+        if(this.state.winner === "blue"){
+            
+            draw.font = '60px digitalfont'
+
+            draw.fillStyle = "#0000ff"
+
+            draw.textAlign = "center"
+
+            draw.fillText("Blue Team Wins!", width/2,height/2)
+
+            draw.font = '30px digitalfont'
+
+            draw.fillStyle = "#ffffff"
+
+            draw.fillText("Click anywhere to return to the lobby.", width/2,height/2 + 60)
+        }
 
     }
 
@@ -586,6 +692,12 @@ class GameScreen extends React.Component {
                     socket.emit("player info", players[thisId])
                 }
             })
+        }
+
+        if(this.state.winner !== "none"){
+
+            clearInterval(gameInterval)
+            socket.emit("end game", players[thisId])
         }
     }
 

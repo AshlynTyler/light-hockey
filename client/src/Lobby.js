@@ -15,10 +15,11 @@ class Lobby extends React.Component {
             name: this.props.userName,
             color: this.props.userColor,
             joined: false
-        }
+        },
+        
     }
 
-    componentWillMount(){
+    componentDidMount(){
         socket  = this.props.userSocket
 
         player = {
@@ -117,7 +118,7 @@ class Lobby extends React.Component {
 
         this.setState({player: player})
 
-        socket.emit("ready", this.state.rooms)
+        
 
         let readyNum = 0
 
@@ -128,9 +129,12 @@ class Lobby extends React.Component {
             })
 
             if(readyNum === room.maxPlayers){
+                this.state.rooms.splice(this.state.rooms.indexOf(room),1)
                 socket.emit("start game", room.id)
             }
         }
+
+        socket.emit("ready", this.state.rooms)
     }
 
     render(){

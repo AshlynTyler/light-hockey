@@ -94,6 +94,8 @@ function Room(id){
     blue: 0,
     red: 0
   }
+
+  this.leftPlayers = 0
 }
 
 let score = {
@@ -208,6 +210,7 @@ io.on('connection', function(socket){
   })
 
   socket.on("ready", function(rooms){
+    preRooms = rooms
     socket.to("lobby").emit("rooms change response", rooms)
   })
 
@@ -255,11 +258,15 @@ io.on('connection', function(socket){
     socket.on("claim disk", function(data){
       room.unclaimedDisks = data
 
+      let newpuck = false
+
       if(room.unclaimedDisks.length === 0 && room.pucks.length === 0){
         room.pucks.push(new Puck())
+
+        newpuck = true
       }
 
-      io.in(roomId).emit("claim disk response", {disks: room.unclaimedDisks, pucks: room.pucks})
+      io.in(roomId).emit("claim disk response", {disks: room.unclaimedDisks, pucks: room.pucks, newpuck: newpuck})
     })
 
     socket.on("puck info", function(puck){
@@ -273,7 +280,7 @@ io.on('connection', function(socket){
     socket.on("goal", function(data){
       room.goalCount += 1
 
-      if(room.goalCount === room.players.length){
+      if(room.goalCount === room.players.length - room.leftPlayers){
         room.goalCount = 0
 
         if(data.team === "red"){
@@ -294,6 +301,28 @@ io.on('connection', function(socket){
 
       }
     })
+
+    socket.on("end game", function(player){
+      socket.leave(roomId)
+
+      socket.join("lobby")
+
+      socket.emit("end game response")
+
+      room.leftPlayers++
+
+      if(room.leftPlayers === room.players.length){
+        rooms.splice(rooms.indexOf(room),1)
+      }
+    })
+
+    socket.on("disconnect", function(){
+      room.leftPlayers++
+    })
+
+    if(room.leftPlayers === room.players.length){
+      rooms.splice(rooms.indexOf(room),1)
+    }
 
   })
 });
