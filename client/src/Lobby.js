@@ -1,5 +1,6 @@
 import React from 'react';
 import io from "socket.io-client";
+import './../public/App.css';
 
 let socket;
 
