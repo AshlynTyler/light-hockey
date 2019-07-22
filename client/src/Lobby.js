@@ -166,6 +166,8 @@ class Lobby extends React.Component {
             }
         })
         this.setState({player: player});
+
+        socket.emit("ready", this.state.rooms)
     }
 
     handleColorChange = (event) =>{
@@ -240,6 +242,8 @@ class Lobby extends React.Component {
         })
 
         this.setState({player: player});
+
+        socket.emit("ready", this.state.rooms)
     }
 
     render(){
