@@ -1,6 +1,7 @@
 import React from 'react';
 import io from "socket.io-client";
 import './App.css';
+import { isThisMonth } from 'date-fns';
 
 let socket;
 
@@ -201,7 +202,13 @@ function movePuck(puck){
                 let angleDiff = Math.abs(collisionAngle - disk.direction)
 
                 while(angleDiff > Math.PI){
+                    let loopBreak = 20;
                     angleDiff = Math.abs(angleDiff - 2*Math.PI)
+
+                    loopBreak--
+
+                    if(loopBreak === 0)
+                        break
                 }
 
                 let newSpeed1 = (disk.speed * (((Math.PI/2) - angleDiff)/(Math.PI/2)))*1.1
@@ -250,7 +257,8 @@ class GameScreen extends React.Component {
             red: 0,
             blue: 0
         },
-        playerNames: [],
+        playerNames: ["","","",""],
+        playerColors: ["#000000","#000000","#000000","#000000"],
         winner: "none"
     }
 
@@ -277,6 +285,10 @@ class GameScreen extends React.Component {
 
         players = []
 
+        thisPlayer.name = this.props.userName
+
+        console.log(thisPlayer.name)
+
         socket.emit("player join", thisPlayer)
 
         socket.on("player join response", (data) =>{
@@ -285,8 +297,6 @@ class GameScreen extends React.Component {
             thisId = data.id
 
             unclaimedDisks = data.disks
-
-            console.log(this)
 
             this.setState({score: data.score})
 
@@ -303,8 +313,16 @@ class GameScreen extends React.Component {
             players[player.id] = player;
         })
 
-        socket.on("claim disk response", function(data){
+        socket.on("claim disk response", (data) =>{
             unclaimedDisks = data.disks
+
+            let state = this.state
+
+            state.playerNames[data.player.diskId] = data.player.name
+
+            state.playerColors[data.player.diskId] = data.player.color
+
+            this.setState({playerNames: state.playerNames, playerColors: state.playerColors})
 
             if(data.newpuck)
                 puckTimers.push(new PuckTimer(data.pucks[data.pucks.length -1]))
@@ -324,10 +342,10 @@ class GameScreen extends React.Component {
 
             this.setState({score: data.score})
 
-            if(data.score.blue === 15){
+            if(data.score.blue === 10){
                 this.setState({winner: "blue"})
             }
-            else if(data.score.red === 15){
+            else if(data.score.red === 10){
                 this.setState({winner: "red"})
             }
             else
@@ -685,9 +703,11 @@ class GameScreen extends React.Component {
 
                     players[thisId].hasDisk = 1;
 
+                    players[thisId].diskId = current.id
+
                     unclaimedDisks.splice(unclaimedDisks.indexOf(current),1)
 
-                    socket.emit("claim disk", unclaimedDisks)
+                    socket.emit("claim disk", {disks: unclaimedDisks, player: players[thisId]})
 
                     socket.emit("player info", players[thisId])
                 }
@@ -713,6 +733,12 @@ class GameScreen extends React.Component {
                 <span className="score">  -  </span>
                 <span className="score" id="red-score">{this.state.score.red}</span>
             </p>
+            <div id = "nameContainer">
+                <p id = "player1" className = "playerName" style={{color: this.state.playerColors[0]}}>{this.state.playerNames[0]}</p>
+                <p id = "player2" className = "playerName" style={{color: this.state.playerColors[1]}}>{this.state.playerNames[1]}</p>
+                <p id = "player3" className = "playerName" style={{color: this.state.playerColors[2]}}>{this.state.playerNames[2]}</p>
+                <p id = "player4" className = "playerName" style={{color: this.state.playerColors[3]}}>{this.state.playerNames[3]}</p>
+            </div>
             <canvas onMouseMove = {this.onMouseMove} onClick = {this.onClick} id ="canvas-a" ref="canvas" width="1200px" height="675px"/>
             </>
         )

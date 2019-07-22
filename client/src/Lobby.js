@@ -52,7 +52,11 @@ class Lobby extends React.Component {
             this.setState({rooms: rooms})
         })
 
+        socket.on("start game response", (data) =>{
+            data.player = this.state.player
 
+            socket.emit("start game response b", data)
+        })
 
         socket.emit("enter lobby")
     }
@@ -130,11 +134,34 @@ class Lobby extends React.Component {
 
             if(readyNum === room.maxPlayers){
                 this.state.rooms.splice(this.state.rooms.indexOf(room),1)
-                socket.emit("start game", room.id)
+                socket.emit("start game", {roomId: room.id, player: this.state.player})
             }
         }
 
         socket.emit("ready", this.state.rooms)
+    }
+
+    unReady = (room) =>{
+        player.ready = false;
+
+        room.players[player.id].ready = false
+
+        this.setState({player: player})
+
+        socket.emit("ready", this.state.rooms)
+    }
+
+    handleChange = (event) =>{
+        player.name = event.target.value
+
+        this.state.rooms.forEach((room) =>{
+            if(room.id === player.room){
+                room.players[player.id].name = player.name
+
+                socket.emit("ready", this.state.rooms)
+            }
+        })
+        this.setState({player: player});
     }
 
     render(){
@@ -149,7 +176,12 @@ class Lobby extends React.Component {
             <h1>Light Hockey</h1>
             <div id = "lobby-container" className = "flex-container">
 
-                <div id = "user"></div>
+                <div id = "user">
+                <label>
+                    Username:
+                    <input type="text" value={this.state.player.name} onChange={this.handleChange} />
+                </label>
+                </div>
 
                 <div id = "room-list">
                     {!thisPlayer.joined ? (
@@ -187,7 +219,12 @@ class Lobby extends React.Component {
                                 {thisPlayer.room === room.id ? (
                                             <>
                                                 <div className = "leave-button button" onClick = {() => this.leaveRoom(room)}>leave</div>
-                                                <div className = "ready-button button" onClick = {() => this.ready(room)}>ready</div>
+                                                {this.state.player.ready === false ? (
+                                                    <div className = "ready-button button" onClick = {() => this.ready(room)}>ready</div>
+                                                ) : (
+                                                    <div className = "unready-button button" onClick = {() => this.unReady(room)}>unready</div>
+                                                )}
+
                                             </>
                                         ): (room.players.length < room.maxPlayers && player.joined === false ? (
                                             <div className = "join-button button" onClick = {() => this.joinRoom(room)}>join</div>

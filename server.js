@@ -103,7 +103,7 @@ let score = {
   red: 0
 }
 
-function UnclaimedDisk(x,y,team){
+function UnclaimedDisk(x,y,team,id){
   this.x = x
 
   this.y = y
@@ -111,6 +111,8 @@ function UnclaimedDisk(x,y,team){
   this.radius = 25
 
   this.team = team
+
+  this.id = id
 }
 
 let diskLocations = [{x: 300, y: 225, team: "blue"},{x: 900, y: 225, team: "red"},{x: 300, y: 450, team: "blue"},{x: 900, y: 450, team: "red"}]
@@ -214,15 +216,19 @@ io.on('connection', function(socket){
     socket.to("lobby").emit("rooms change response", rooms)
   })
 
-  socket.on("start game",function(roomId){
-    room = new Room(roomId)
+  socket.on("start game",function(data){
+    room = new Room(data.roomId)
 
     rooms.push(room)
 
     socket.leave("lobby")
 
-    io.in(roomId).emit("start game response", roomId)
+    io.in(data.roomId).emit("start game response", data)
 
+  })
+
+  socket.on("start game response b", function(data){
+    socket.in(data.roomId).emit("start game response c", data)
   })
 
   socket.on("start game events", function(roomId){
@@ -241,7 +247,7 @@ io.on('connection', function(socket){
 
       room.players.push(player)
 
-      room.unclaimedDisks.push(new UnclaimedDisk(diskLocations[room.players.length -1 ].x,diskLocations[room.players.length -1].y,diskLocations[room.players.length -1].team))
+      room.unclaimedDisks.push(new UnclaimedDisk(diskLocations[room.players.length -1 ].x,diskLocations[room.players.length -1].y,diskLocations[room.players.length -1].team,room.players.length-1))
 
       socket.emit("player join response", {id: player.id, players: room.players, disks: room.unclaimedDisks, score: room.score})
 
@@ -256,7 +262,7 @@ io.on('connection', function(socket){
     })
 
     socket.on("claim disk", function(data){
-      room.unclaimedDisks = data
+      room.unclaimedDisks = data.disks
 
       let newpuck = false
 
@@ -266,7 +272,7 @@ io.on('connection', function(socket){
         newpuck = true
       }
 
-      io.in(roomId).emit("claim disk response", {disks: room.unclaimedDisks, pucks: room.pucks, newpuck: newpuck})
+      io.in(roomId).emit("claim disk response", {disks: room.unclaimedDisks, pucks: room.pucks, newpuck: newpuck, player:data.player})
     })
 
     socket.on("puck info", function(puck){
@@ -318,11 +324,13 @@ io.on('connection', function(socket){
 
     socket.on("disconnect", function(){
       room.leftPlayers++
+
+      if(room.leftPlayers === room.players.length){
+        rooms.splice(rooms.indexOf(room),1)
+      }
     })
 
-    if(room.leftPlayers === room.players.length){
-      rooms.splice(rooms.indexOf(room),1)
-    }
+
 
   })
 });

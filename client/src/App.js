@@ -23,10 +23,15 @@ class App extends React.Component {
     const { endpoint } = this.state.endpoint;
     this.state.socket = io(process.env.PORT || "http://localhost:3001");
 
-    this.state.socket.on("start game response", (roomId) =>{
 
-      this.state.socket.emit("start game events", roomId)
-      this.setState({inGame: true})
+  }
+
+  componentDidMount() {
+    this.state.socket.on("start game response c", (data) =>{
+
+
+      this.state.socket.emit("start game events", data.roomId)
+      this.setState({userName:data.player.name, userColor: data.player.color, inGame: true})
     })
 
     this.state.socket.on("end game response", () =>{
