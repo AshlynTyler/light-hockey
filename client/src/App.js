@@ -10,7 +10,7 @@ class App extends React.Component {
     this.state = {
       endpoint:{
         response: true,
-        endpoint: "http://localhost:3001"
+        endpoint: ""
       },
       socket: {},
       userName: "guest",
@@ -22,7 +22,7 @@ class App extends React.Component {
 
   componentWillMount() {
     const { endpoint } = this.state.endpoint;
-    this.state.socket = io(process.env.PORT || "http://localhost:3001");
+    this.state.socket = io(process.env.PORT);
 
 
   }
