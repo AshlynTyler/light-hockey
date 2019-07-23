@@ -318,9 +318,9 @@ h1{
   -webkit-appearance: none; /* Override default look */
   -moz-appearance: none;
   appearance: none;
-  width: 24x; /* Set a specific slider handle width */
+  width: 24px; /* Set a specific slider handle width */
   height: 24px; /* Slider handle height */
-  background: #ffffff55;
+  background: #ffffffaa;
   cursor: pointer; /* Cursor on hover */
 
   border-radius: 12px;
