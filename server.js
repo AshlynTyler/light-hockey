@@ -228,7 +228,7 @@ io.on('connection', function(socket){
   })
 
   socket.on("start game response b", function(data){
-    socket.in(data.roomId).emit("start game response c", data)
+    socket.emit("start game response c", data)
   })
 
   socket.on("start game events", function(roomId){

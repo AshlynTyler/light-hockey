@@ -30,6 +30,8 @@ class App extends React.Component {
   componentDidMount() {
     this.state.socket.on("start game response c", (data) =>{
 
+      if(this.state.inGame === false){}
+
 
       this.state.socket.emit("start game events", data.roomId)
       this.setState({userName:data.player.name, userColor: data.player.color, userColorValue: data.player.colorValue, inGame: true})
