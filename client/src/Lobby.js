@@ -6,7 +6,12 @@ let socket;
 
 let player;
 
-let listening = false;
+let listeners = ["create preroom response"
+    ,"other preroom response"
+    ,"rooms change response"
+    ,"enter lobby response"
+    ,"start game response"]
+
 
 class Lobby extends React.Component {
 
@@ -62,10 +67,14 @@ class Lobby extends React.Component {
             socket.on("start game response", (data) =>{
                 data.player = this.state.player
 
-                socket.emit("start game response b", data)
-            })
+                listeners.forEach(function(listener){
+                    socket.off(listener)
+                })
 
-            listening = true;
+                socket.emit("start game response b", data)
+
+                
+            })
 
         socket.emit("enter lobby")
     }
