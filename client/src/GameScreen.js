@@ -266,6 +266,12 @@ class GameScreen extends React.Component {
 
     componentDidMount() {
 
+        unclaimedDisks = [];
+
+        puckTimers = [];
+
+        pucks = [];
+
         const canvas = this.refs.canvas
         draw = canvas.getContext("2d")
 
