@@ -233,6 +233,8 @@ io.on('connection', function(socket){
 
   socket.on("start game events", function(roomId){
 
+    console.log("events!")
+
     let room;
 
     let listeners = [];
@@ -321,7 +323,7 @@ io.on('connection', function(socket){
       socket.join("lobby")
 
       listeners.forEach(function(listener){
-        socket.off(listener)
+        socket.removeAllListeners(listener)
       })
 
       socket.emit("end game response")
