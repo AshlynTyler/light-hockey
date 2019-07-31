@@ -234,11 +234,15 @@ io.on('connection', function(socket){
   socket.on("start game events", function(roomId){
 
     let room;
+
+    let listeners = [];
   
     rooms.forEach(function(thisRoom){
       if(roomId === thisRoom.id)
         room = thisRoom
     })
+
+    listeners.push("player join")
     //in-game emissions/responses
     socket.on("player join", function(player){
       player.id = room.players.length
@@ -253,12 +257,14 @@ io.on('connection', function(socket){
 
     })
 
+    listeners.push("player info")
     socket.on("player info", function(player){
       room.players[player.id] = player
 
       socket.in(roomId).emit("player info response", room.players[player.id])
     })
 
+    listeners.push("claim disk")
     socket.on("claim disk", function(data){
       room.unclaimedDisks = data.disks
 
@@ -273,6 +279,7 @@ io.on('connection', function(socket){
       io.in(roomId).emit("claim disk response", {disks: room.unclaimedDisks, pucks: room.pucks, newpuck: newpuck, player:data.player})
     })
 
+    listeners.push("puck info")
     socket.on("puck info", function(puck){
       room.pucks[puck.id] = puck
 
@@ -281,6 +288,7 @@ io.on('connection', function(socket){
       room.goalCount = 0;
     })
 
+    listeners.push("goal")
     socket.on("goal", function(data){
       room.goalCount += 1
 
@@ -306,10 +314,15 @@ io.on('connection', function(socket){
       }
     })
 
+    listeners.push("end game")
     socket.on("end game", function(player){
       socket.leave(roomId)
 
       socket.join("lobby")
+
+      listeners.forEach(function(listener){
+        socket.removeAllListeners(listener)
+      })
 
       socket.emit("end game response")
 
