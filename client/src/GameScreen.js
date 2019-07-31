@@ -735,6 +735,7 @@ class GameScreen extends React.Component {
 
             clearInterval(gameInterval)
             socket.emit("end game", players[thisId])
+        }
     }
 
     getCanvasPos = function(){
