@@ -359,10 +359,10 @@ class GameScreen extends React.Component {
 
             this.setState({score: data.score})
 
-            if(data.score.blue === 10){
+            if(data.score.blue === 3){
                 this.setState({winner: "blue"})
             }
-            else if(data.score.red === 10){
+            else if(data.score.red === 3){
                 this.setState({winner: "red"})
             }
             else
@@ -735,10 +735,6 @@ class GameScreen extends React.Component {
 
             clearInterval(gameInterval)
             socket.emit("end game", players[thisId])
-            listeners.forEach(function(listener){
-                socket.off(listener)
-            })
-        }
     }
 
     getCanvasPos = function(){
