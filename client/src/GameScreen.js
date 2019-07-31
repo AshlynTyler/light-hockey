@@ -299,72 +299,70 @@ class GameScreen extends React.Component {
 
         socket.emit("player join", thisPlayer)
 
-        if(listening === false){
+        socket.on("player join response", (data) =>{
+            players = data.players
 
-            socket.on("player join response", (data) =>{
-                players = data.players
+            thisId = data.id
 
-                thisId = data.id
+            unclaimedDisks = data.disks
 
-                unclaimedDisks = data.disks
+            this.setState({score: data.score})
 
-                this.setState({score: data.score})
+            console.log("player join")
+        })
 
-                
+        socket.on("other join response", function(data){
+            players = data.players
+
+            unclaimedDisks = data.disks
+
+            console.log("other join")
+        })
+
+        socket.on("player info response", function(player){
+            players[player.id] = player;
+        })
+
+        socket.on("claim disk response", (data) =>{
+            unclaimedDisks = data.disks
+
+            let state = this.state
+
+            state.playerNames[data.player.diskId] = data.player.name
+
+            state.playerColors[data.player.diskId] = data.player.color
+
+            this.setState({playerNames: state.playerNames, playerColors: state.playerColors})
+
+            if(data.newpuck)
+                puckTimers.push(new PuckTimer(data.pucks[data.pucks.length -1]))
+
+        })
+
+        socket.on("puck info response", function(puck){
+            pucks[puck.id] = puck
+
+            console.log("puck info")
+        })
+
+        socket.on("goal response",(data) =>{
+            pucks.splice(data.id,1)
+
+            pucks.forEach(function(index){
+                index.id = pucks.indexOf(index)
             })
 
-            socket.on("other join response", function(data){
-                players = data.players
+            this.setState({score: data.score})
 
-                unclaimedDisks = data.disks
-            })
-
-            socket.on("player info response", function(player){
-                players[player.id] = player;
-            })
-
-            socket.on("claim disk response", (data) =>{
-                unclaimedDisks = data.disks
-
-                let state = this.state
-
-                state.playerNames[data.player.diskId] = data.player.name
-
-                state.playerColors[data.player.diskId] = data.player.color
-
-                this.setState({playerNames: state.playerNames, playerColors: state.playerColors})
-
-                if(data.newpuck)
-                    puckTimers.push(new PuckTimer(data.pucks[data.pucks.length -1]))
-
-            })
-
-            socket.on("puck info response", function(puck){
-                pucks[puck.id] = puck
-            })
-
-            socket.on("goal response",(data) =>{
-                pucks.splice(data.id,1)
-
-                pucks.forEach(function(index){
-                    index.id = pucks.indexOf(index)
-                })
-
-                this.setState({score: data.score})
-
-                if(data.score.blue === 10){
-                    this.setState({winner: "blue"})
-                }
-                else if(data.score.red === 10){
-                    this.setState({winner: "red"})
-                }
-                else
-                    puckTimers.push(new PuckTimer(data.puck))
-            })
-
-            listening = true;
-
-        }
+            if(data.score.blue === 10){
+                this.setState({winner: "blue"})
+            }
+            else if(data.score.red === 10){
+                this.setState({winner: "red"})
+            }
+            else
+                puckTimers.push(new PuckTimer(data.puck))
+        })
     }
 
     //clears the entire canvas
