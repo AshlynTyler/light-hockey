@@ -233,8 +233,6 @@ io.on('connection', function(socket){
 
   socket.on("start game events", function(roomId){
 
-    console.log("events!")
-
     let room;
 
     let listeners = [];

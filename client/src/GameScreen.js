@@ -313,7 +313,7 @@ class GameScreen extends React.Component {
 
             this.setState({score: data.score})
 
-            console.log("player join")
+            
         })
 
         socket.on("other join response", function(data){
@@ -321,7 +321,7 @@ class GameScreen extends React.Component {
 
             unclaimedDisks = data.disks
 
-            console.log("other join")
+            
         })
 
         socket.on("player info response", function(player){
@@ -347,7 +347,7 @@ class GameScreen extends React.Component {
         socket.on("puck info response", function(puck){
             pucks[puck.id] = puck
 
-            console.log("puck info")
+            
         })
 
         socket.on("goal response",(data) =>{
@@ -359,10 +359,10 @@ class GameScreen extends React.Component {
 
             this.setState({score: data.score})
 
-            if(data.score.blue === 3){
+            if(data.score.blue === 10){
                 this.setState({winner: "blue"})
             }
-            else if(data.score.red === 3){
+            else if(data.score.red === 10){
                 this.setState({winner: "red"})
             }
             else
