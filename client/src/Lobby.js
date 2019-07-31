@@ -34,41 +34,37 @@ class Lobby extends React.Component {
 
         this.colorChange(player.colorValue)
 
-        if(listening === false){
 
-            socket.on("create preroom response", (rooms) =>{
-                player.room = rooms[rooms.length-1].id
+        socket.on("create preroom response", (rooms) =>{
+            player.room = rooms[rooms.length-1].id
 
-                player.id = 0
+            player.id = 0
 
-                player.joined = true
+            player.joined = true
 
-                player.ready = false;
+            player.ready = false;
 
-                this.setState({rooms: rooms, player: player})
-            })
+            this.setState({rooms: rooms, player: player})
+        })
 
-            socket.on("other preroom response", (rooms) =>{
-                this.setState({rooms: rooms})
-            })
+        socket.on("other preroom response", (rooms) =>{
+            this.setState({rooms: rooms})
+        })
 
-            socket.on("rooms change response", (rooms) =>{
-                this.setState({rooms: rooms})
-            })
+        socket.on("rooms change response", (rooms) =>{
+            this.setState({rooms: rooms})
+        })
 
-            socket.on("enter lobby response", (rooms) =>{
-                this.setState({rooms: rooms})
-            })
+        socket.on("enter lobby response", (rooms) =>{
+            this.setState({rooms: rooms})
+        })
 
-            socket.on("start game response", (data) =>{
-                data.player = this.state.player
+        socket.on("start game response", (data) =>{
+            data.player = this.state.player
 
-                socket.emit("start game response b", data)
-            })
-
-            listening = true;
-        }
-
+            socket.emit("start game response b", data)
+        })
+        
         socket.emit("enter lobby")
     }
 
