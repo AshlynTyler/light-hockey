@@ -117,7 +117,7 @@ function UnclaimedDisk(x,y,team,id){
 
 let diskLocations = [{x: 300, y: 225, team: "blue"},{x: 900, y: 225, team: "red"},{x: 300, y: 450, team: "blue"},{x: 900, y: 450, team: "red"}]
 
-function Puck(x = 600,y = 675/2,radius=15,points=1){
+function Puck(id,x = 600,y = 675/2,radius=15,points=1){
   this.x = x
   this.y = y
 
@@ -134,7 +134,7 @@ function Puck(x = 600,y = 675/2,radius=15,points=1){
 
   this.radius = radius
 
-  this.id = pucks.length
+  this.id = id
 
   this.goal = 0
 }
@@ -265,7 +265,7 @@ io.on('connection', function(socket){
       let newpuck = false
 
       if(room.unclaimedDisks.length === 0 && room.pucks.length === 0){
-        room.pucks.push(new Puck())
+        room.pucks.push(new Puck(room.pucks.length))
 
         newpuck = true
       }
@@ -300,7 +300,7 @@ io.on('connection', function(socket){
             index.id = room.pucks.indexOf(index)
         })
 
-        io.in(roomId).emit("goal response",{score: room.score, id: data.puck.id, puck: new Puck()})
+        io.in(roomId).emit("goal response",{score: room.score, id: data.puck.id, puck: new Puck(room.pucks.length)})
 
 
       }

@@ -272,6 +272,8 @@ class GameScreen extends React.Component {
 
         pucks = [];
 
+        thisPlayer = {};
+
         const canvas = this.refs.canvas
         draw = canvas.getContext("2d")
 
