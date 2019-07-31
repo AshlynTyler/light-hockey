@@ -321,7 +321,7 @@ io.on('connection', function(socket){
       socket.join("lobby")
 
       listeners.forEach(function(listener){
-        socket.removeAllListeners(listener)
+        socket.off(listener)
       })
 
       socket.emit("end game response")
