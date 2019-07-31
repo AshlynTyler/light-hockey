@@ -11,7 +11,12 @@ let draw;
 
 let thisPlayer
 
-let listening = false;
+let listeners = ["player join response"
+,"other join response"
+,"player info response"
+,"claim disk response"
+,"puck info response"
+,"goal response"]
 
 let gameInterval;
 
@@ -730,6 +735,9 @@ class GameScreen extends React.Component {
 
             clearInterval(gameInterval)
             socket.emit("end game", players[thisId])
+            listeners.forEach(function(listener){
+                socket.off(listener)
+            })
         }
     }
 
