@@ -104,41 +104,41 @@ h1{
   border-color: #ffaa00;
   position: relative;
 
-  padding-left: 100px;
-
-  padding-right: 100px;
 
   border-style: solid;
 
   align-items: center;
+  padding-bottom: 50px;
+}
+@media only screen and (min-width: 1550px){
+  #create-room{
+    padding-left: 100px;
+    padding-right: 100px;
+  }
 }
 
 .p-button{
   color: #ffaa0077;
   border-color: #ffaa0077;
+  padding: 5px 10px 5px 10px;
 
-  padding: 10px;
+}
 
-  padding-left: 20px;
-
-  padding-right: 20px;
+@media only screen and (min-width: 730px){
+  .p-button{
+    padding: 10px 20px 10px 20px;
+  }
 }
 
 .selected{
   color: #ffaa00;
   border-color: #ffaa00;
   cursor: auto;
-
-  padding: 10px;
-
-  padding-left: 20px;
-
-  padding-right: 20px;
 }
 
 .create-button{
-  color: #0000cc;
-  border-color: #0000cc;
+  color: #1166ff;
+  border-color: #0022dd;
   position: absolute;
   bottom: 10px;
   right: 10px;
@@ -153,7 +153,7 @@ h1{
 
   position: relative;
 
-  border-color: #0000cc;
+  border-color: #0022dd;
 
   margin: 5px;
 
@@ -290,8 +290,17 @@ h1{
 
   margin-bottom: 70px;
 
+  width: 80%;
+
   user-select: text;
   -moz-user-select: text;
+}
+
+@media only screen and (min-width: 730px){
+  #nameInput{
+    width: 200px;
+  }
+  
 }
 
 .slider {
