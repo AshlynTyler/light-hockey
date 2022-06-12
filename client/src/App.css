@@ -187,11 +187,19 @@ h1{
   
   padding: 5px;
 
-  width: 40%;
+  width: 80%;
 
   border-style: solid;
 
   margin: 5px;
+
+  overflow: hidden;
+}
+
+@media only screen and (min-width: 1000px){
+  .player-icon{
+    width: 40%;
+  }
 }
 
 .green{

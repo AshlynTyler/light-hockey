@@ -37,7 +37,7 @@ let boundary = {
     left: 10,
     bottom: 665,
     right: 1190
-  }
+}
 
 
 
@@ -748,18 +748,18 @@ class GameScreen extends React.Component {
     render() {
         return(
             <>
-            <p>
+            <div>
                 <span className="score" id="blue-score">{this.state.score.blue}</span>
                 <span className="score">  -  </span>
                 <span className="score" id="red-score">{this.state.score.red}</span>
-            </p>
+            </div>
             <div id = "nameContainer">
                 <p id = "player1" className = "playerName" style={{color: this.state.playerColors[0]}}>{this.state.playerNames[0]}</p>
                 <p id = "player2" className = "playerName" style={{color: this.state.playerColors[1]}}>{this.state.playerNames[1]}</p>
                 <p id = "player3" className = "playerName" style={{color: this.state.playerColors[2]}}>{this.state.playerNames[2]}</p>
                 <p id = "player4" className = "playerName" style={{color: this.state.playerColors[3]}}>{this.state.playerNames[3]}</p>
             </div>
-            <canvas onMouseMove = {this.onMouseMove} onClick = {this.onClick} id ="canvas-a" ref="canvas" width="1200px" height="675px"/>
+            <canvas onMouseMove = {this.onMouseMove} onTouchStart = {this.onMouseMove} onTouchMove = {this.onMouseMove} onClick = {this.onClick} id ="canvas-a" ref="canvas" width="1200px" height="675px"/>
             </>
         )
     }
