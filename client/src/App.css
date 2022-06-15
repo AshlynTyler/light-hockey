@@ -30,11 +30,21 @@ body{
 }
 
 .score{
-  font-size: 80px;
+  font-size: 30px;
 
-  margin-top: 40px;
+  margin-top: 20px;
 
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+}
+
+@media only screen and (min-width: 700px){
+  .score{
+    font-size: 80px;
+  
+    margin-top: 40px;
+  
+    margin-bottom: 40px;
+  }
 }
 
 #blue-score{
