@@ -759,7 +759,7 @@ class GameScreen extends React.Component {
                     <p id = "player3" className = "playerName" style={{color: this.state.playerColors[2]}}>{this.state.playerNames[2]}</p>
                     <p id = "player4" className = "playerName" style={{color: this.state.playerColors[3]}}>{this.state.playerNames[3]}</p>
                 </div>
-                <canvas onMouseMove = {this.onMouseMove} onTouchStart = {this.onMouseMove} onTouchMove = {this.onMouseMove} 
+                <canvas onPointerMove = {this.onMouseMove}
                     onClick = {this.onClick} 
                     id ="canvas-a" 
                     ref="canvas" 
