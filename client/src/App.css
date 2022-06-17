@@ -28,6 +28,7 @@ body{
 
 #canvas-a{
   cursor: none;
+  touch-action: none;
 }
 
 .score{

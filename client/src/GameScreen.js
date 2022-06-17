@@ -375,8 +375,8 @@ class GameScreen extends React.Component {
         draw.clearRect(
             0,
             0,
-            this.refs.canvas.offsetWidth,
-            this.refs.canvas.offsetHeight
+            1200,
+            675
         )
     }
 
@@ -508,15 +508,17 @@ class GameScreen extends React.Component {
 
     renderFrame = function(){
 
-        
+        draw.scale(this.refs.canvas.offsetWidth / 1200)
     
         this.clearCanvas();
 
         //drawing the board
 
-        let width = this.refs.canvas.offsetWidth
+        let width = 1200
 
-        let height = this.refs.canvas.offsetHeight
+        let height = 675
+
+        
 
         draw.lineWidth = 2
 
@@ -697,12 +699,13 @@ class GameScreen extends React.Component {
 
     }
 
-    onMouseMove = (event) =>{
+    onPointerMove = (event) =>{
+        event.preventDefault()
         this.getCanvasPos()
 
         if (typeof(thisId) != "undefined"){
-            players[thisId].mouse.x = event.pageX - canvasPos.offsetLeft
-            players[thisId].mouse.y = event.pageY - canvasPos.offsetTop
+            players[thisId].mouse.x = (event.pageX - canvasPos.offsetLeft) / (this.refs.canvas.offsetWidth / 1200)
+            players[thisId].mouse.y = (event.pageY - canvasPos.offsetTop) / (this.refs.canvas.offsetWidth / 1200)
 
             
         }
@@ -759,12 +762,13 @@ class GameScreen extends React.Component {
                     <p id = "player3" className = "playerName" style={{color: this.state.playerColors[2]}}>{this.state.playerNames[2]}</p>
                     <p id = "player4" className = "playerName" style={{color: this.state.playerColors[3]}}>{this.state.playerNames[3]}</p>
                 </div>
-                <canvas onPointerMove = {this.onMouseMove}
+                <canvas onPointerMove = {this.onPointerMove}
                     onClick = {this.onClick} 
                     id ="canvas-a" 
                     ref="canvas" 
-                    width="1200px" 
-                    height="675px"
+                    max-width="100%" 
+                    max-height="100%"
+                    aspect-ratio="16 / 9"
                 />
             </>
         )
