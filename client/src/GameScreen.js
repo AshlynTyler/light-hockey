@@ -509,6 +509,8 @@ class GameScreen extends React.Component {
     renderFrame = function(){
 
         draw.setTransform((this.refs.canvas.offsetWidth / 1200), 0, 0, (this.refs.canvas.offsetHeight / 675), 0, 0)
+        console.log(this.refs.canvas.offsetWidth)
+        console.log(this.refs.canvas.offsetHeight)
     
         this.clearCanvas();
 
