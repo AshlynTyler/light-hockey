@@ -512,7 +512,7 @@ class GameScreen extends React.Component {
 
         draw.save()
 
-        draw.scale((this.refs.canvas.offsetWidth / 1200),(this.refs.canvas.offsetHeight / 675))
+        draw.scale((this.refs.canvas.offsetWidth / 4800),(this.refs.canvas.offsetHeight / (675*4)))
     
         this.clearCanvas();
 
