@@ -766,9 +766,7 @@ class GameScreen extends React.Component {
                     onClick = {this.onClick} 
                     id ="canvas-a" 
                     ref="canvas" 
-                    max-width="100%" 
-                    max-height="100%"
-                    aspect-ratio="16 / 9"
+
                 />
             </>
         )
