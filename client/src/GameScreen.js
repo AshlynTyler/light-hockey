@@ -508,7 +508,7 @@ class GameScreen extends React.Component {
 
     renderFrame = function(){
 
-        draw.scale(this.refs.canvas.offsetWidth / 1200, this.refs.canvas.offsetHeight / 675)
+        draw.setTransform(this.refs.canvas.offsetWidth / 1200, 0, 0, this.refs.canvas.offsetHeight / 675, 0, 0)
     
         this.clearCanvas();
 
@@ -762,12 +762,14 @@ class GameScreen extends React.Component {
                     <p id = "player3" className = "playerName" style={{color: this.state.playerColors[2]}}>{this.state.playerNames[2]}</p>
                     <p id = "player4" className = "playerName" style={{color: this.state.playerColors[3]}}>{this.state.playerNames[3]}</p>
                 </div>
-                <canvas onPointerMove = {this.onPointerMove}
-                    onClick = {this.onClick} 
-                    id ="canvas-a" 
-                    ref="canvas" 
+                <div id = "canvas-holder">
+                    <canvas onPointerMove = {this.onPointerMove}
+                        onClick = {this.onClick} 
+                        id ="canvas-a" 
+                        ref="canvas" 
 
-                />
+                    />
+                </div>
             </>
         )
     }
