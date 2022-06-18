@@ -29,8 +29,6 @@ body{
 #canvas-a{
   cursor: none;
   touch-action: none;
-  width: 100%;
-  height: 100%;
 }
 #canvas-holder{
   max-width: 100%;

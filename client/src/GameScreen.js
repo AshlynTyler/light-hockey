@@ -508,11 +508,12 @@ class GameScreen extends React.Component {
 
     renderFrame = function(){
 
+
         draw.restore()
 
         draw.save()
 
-        draw.scale((this.refs.canvas.offsetWidth / 4800),(this.refs.canvas.offsetHeight / (675*4)))
+        draw.scale((this.refs.canvas.offsetWidth / 1200),(this.refs.canvas.offsetHeight / 675))
     
         this.clearCanvas();
 
@@ -766,12 +767,13 @@ class GameScreen extends React.Component {
                     <p id = "player3" className = "playerName" style={{color: this.state.playerColors[2]}}>{this.state.playerNames[2]}</p>
                     <p id = "player4" className = "playerName" style={{color: this.state.playerColors[3]}}>{this.state.playerNames[3]}</p>
                 </div>
-                <div id = "canvas-holder">
+                <div id = "canvas-holder" ref="holder">
                     <canvas onPointerMove = {this.onPointerMove}
                         onClick = {this.onClick} 
                         id ="canvas-a" 
                         ref="canvas" 
-
+                        width={this.refs.holder.offsetWidth}
+                        height={this.refs.holder.offsetHeight}
                     />
                 </div>
             </>
