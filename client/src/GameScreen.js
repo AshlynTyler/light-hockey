@@ -507,13 +507,6 @@ class GameScreen extends React.Component {
     }
 
     renderFrame = function(){
-
-
-        draw.restore()
-
-        draw.save()
-
-        draw.scale((this.refs.canvas.offsetWidth / 1200),(this.refs.canvas.offsetHeight / 675))
     
         this.clearCanvas();
 
@@ -772,8 +765,8 @@ class GameScreen extends React.Component {
                         onClick = {this.onClick} 
                         id ="canvas-a" 
                         ref="canvas" 
-                        width={this.refs.holder.offsetWidth}
-                        height={this.refs.holder.offsetHeight}
+                        width="1200"
+                        height="675"
                     />
                 </div>
             </>
