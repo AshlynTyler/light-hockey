@@ -412,7 +412,7 @@ class GameScreen extends React.Component {
 
                 //pushing disk off of boundries
 
-                let divider = this.refs.canvas.offsetWidth/2
+                let divider = 600
 
                 if(disk.x + disk.radius > divider  && disk.team === "blue"){
                     disk.x = divider - disk.radius

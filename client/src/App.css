@@ -272,21 +272,33 @@ h1{
 }
 
 #nameContainer{
-  height: 70px;
+  height: 30px;
 
   position: relative;
 
-  width: 1200px;
+  width: 100%;
 
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
+
+
 
 .playerName{
   position: absolute;
 
-  font-size: 30px;
+  font-size: 15px;
 
   margin: 0;
+}
+
+@media only screen and (min-height: 700px){
+  #nameContainer{
+    height: 70px;
+    margin-bottom: 10px;
+  }
+  .playerName{
+    font-size: 30px;
+  }
 }
 
 #player1{
@@ -324,6 +336,8 @@ h1{
   margin-bottom: 70px;
 
   width: 80%;
+
+  font-size: 18px;
 
   user-select: text;
   -moz-user-select: text;
